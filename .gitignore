@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Large sequencing data — never commit these to git
+*.bam
+*.bam.bai
+*.cram
+*.crai
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+
+# Pipeline outputs / scratch
+data/*/
+results/*/
+*.mosdepth.summary.txt
+*.mosdepth.global.dist.txt
+
+# Logs
+*.out
+*.err
+*.log
+
+# Python / conda
+__pycache__/
+*.pyc
+.conda/
