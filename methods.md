@@ -14,13 +14,12 @@ How the validation was run, from raw sequencing data to graded HLA calls.
 2. **Merge** same-library runs into one BAM to reach enough depth over the HLA region. (Runs from different instruments/libraries are not merged.)
 3. **Type** with `hla_resolve` in whole-genome (`WGS`) mode.
 4. **Check depth** with `mosdepth` the mean HLA-region depth is the authoritative coverage number.
-5. **Grade** the calls against the Lai reference at three- and four-field resolution.
 
 Batch runs were driven by a sample manifest (`data/samples.tsv`) through a SLURM array job (`scripts/run_array.sh`); single samples used `scripts/run_single.sh`.
 
 ## Depth gate
 
-Samples below roughly ⟨10–15⟩× mean HLA-region coverage "soft-fail" — the pipeline types fewer than all 8 genes, and low-depth calls are unreliable. Merging additional runs raises depth and clears the gate.
+Samples below roughly ⟨10–15⟩× mean HLA-region coverage "soft-fail", and low-depth calls are unreliable. Merging additional runs raises depth and clears the gate.
 
 ## Grading
 
