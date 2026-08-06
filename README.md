@@ -1,6 +1,6 @@
 # HLA-Resolve Validation
 
-**Independently validating a genomics pipeline that reads human immune-system genes from DNA sequencing — benchmarked against a published gold-standard set.**
+**Independently validating a genomics pipeline that reads human immune-system genes from DNA sequencing benchmarked against a published gold-standard set.**
 
 ## What this is
 
