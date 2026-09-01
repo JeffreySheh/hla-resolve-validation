@@ -4,7 +4,7 @@ How the validation was run, from raw sequencing data to graded HLA calls.
 
 ## Data
 
-- **Samples:** 41 of the 44 in the Lai et al. reference set (three were out of scope).
+- **Samples:** 41 of the 44 in the Lai et al.
 - **Sequencing:** public PacBio HiFi whole-genome data from the Human Pangenome Reference Consortium (HPRC), pulled from S3.
 - **Truth set:** Lai et al. four-field HLA types (`data/lai_answer_key.tsv`).
 
@@ -19,7 +19,7 @@ Batch runs were driven by a sample manifest (`data/samples.tsv`) through a SLURM
 
 ## Depth gate
 
-Samples below roughly ⟨10–15⟩× mean HLA-region coverage "soft-fail", and low-depth calls are unreliable. Merging additional runs raises depth and clears the gate.
+hla_resolve applies a per-gene depth gate: a gene is typed only when its antigen recognition site (ARS) reaches ≥ 8× mean coverage depth. Genes below that threshold soft-fail, and their calls are unreliable. Merging additional same-library runs raises per-gene ARS depth and clears the gate.
 
 ## Grading
 
@@ -31,6 +31,5 @@ Calls were compared to the Lai reference **by hand**, per gene, at three- and fo
 
 ## Interpreting the results
 
-- **Three-field concordance** reflects agreement at the protein-relevant level.
-- **Four-field losses** are almost always fourth-field-only: the call is correct through three fields and differs only at the non-coding fourth field expected reference database noise, not a typing error.
-- A few genuine deeper discrepancies (some DRB1/DQB1 cases) are flagged in the notes column of `results/hla_validation_results.csv`.
+- **Three-field concordance** requires agreement not only at the protein level (two fields — the amino acid sequence) but also on synonymous coding substitutions (the third field — silent DNA changes that don't alter the protein). It is therefore a stricter bar than protein-level identity.
+- **Four-field losses** are almost always fourth-field-only: the call agrees through three fields and differs only at the non-coding fourth field. The three-field call is therefore correct; the fourth-field difference is consistent with reference-database noise at non-coding positions, though we don't rule out a genuine fourth-field difference.
