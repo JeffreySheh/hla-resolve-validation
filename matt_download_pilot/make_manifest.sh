@@ -14,6 +14,9 @@
 #
 # Every path is confirmed to exist and its size comes from S3 itself, so the
 # downloader can do a byte-exact check without a second network round trip.
+
+# Ignore this line
+
 set -uo pipefail
 
 SAMPLES=${1:-}
