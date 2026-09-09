@@ -1,18 +1,18 @@
 #!/bin/bash
 #SBATCH --job-name=hla_merge
-#SBATCH --output=/hb/scratch/jsheh/hla/pacbio_bam/logs/merge_%A_%a.out
+#SBATCH --output=/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam/logs/merge_%A_%a.out
 #SBATCH --partition=windfall
 #SBATCH --account=windfall
 #SBATCH --qos=windfall
 #SBATCH --requeue
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
-#SBATCH --time=8:00:00
+#SBATCH --time=48:00:00
 # STEP 2: pick ONE chemistry per sample, combine -> one bam. Reads any SAMPLE_LIST.
 #   SAMPLE_LIST=~/samples_17.tsv sbatch --array=1-17 ~/2_merge.sbatch
 
 set -uo pipefail
-OUTDIR=${OUTDIR:-/hb/scratch/jsheh/hla/pacbio_bam}
+OUTDIR=${OUTDIR:-/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam}
 MERGEDIR=$OUTDIR/merged
 REVIO_MIN=${REVIO_MIN:-3}
 FORCE_SQ2=${FORCE_SQ2:-" HG01952 HG01978 "}
@@ -22,7 +22,8 @@ mkdir -p "$MERGEDIR"
 
 SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$SAMPLE_LIST" | tr -d '[:space:]')
 [ -n "$SAMPLE" ] || exit 0
-command -v samtools >/dev/null || { echo "FATAL: no samtools (source ~/hla_env.sh)"; exit 1; }
+command -v samtools >/dev/null 2>&1 || module load "${SAMTOOLS_MODULE:-samtools}" 2>/dev/null
+command -v samtools >/dev/null 2>&1 || { echo "FATAL: no samtools after module load"; exit 1; }
 
 OUT="$MERGEDIR/$SAMPLE.hifi.bam"; DONE="$MERGEDIR/.$SAMPLE.done"; TMP="$OUT.tmp"; HDR="$MERGEDIR/.$SAMPLE.hdr"
 log() { echo "[$(date +%H:%M:%S)] $SAMPLE: $*"; }
@@ -49,7 +50,7 @@ if [ "$NIN" -eq 1 ] && [ -z "$KIN" ]; then
     cp "${INPUTS[0]}" "$TMP"
 elif [ -n "$KIN" ]; then
     log "stripping kinetics during merge"
-    samtools merge -@8 -f - "${INPUTS[@]}" | samtools view -b -@8 -x fi -x fp -x ri -x rp -x ip -x pw -o "$TMP" -
+    samtools merge -@16 -f - "${INPUTS[@]}" | samtools view -b -@16 -x fi -x fp -x ri -x rp -x ip -x pw -o "$TMP" -
 else
     { samtools view -H "${INPUTS[0]}" | grep '^@HD'
       for f in "${INPUTS[@]}"; do samtools view -H "$f" | grep '^@RG'; done | awk '!s[$0]++'
@@ -57,7 +58,7 @@ else
     if [ "$(grep -c '^@RG' "$HDR")" = "$NIN" ]; then
         samtools cat -h "$HDR" -o "$TMP" "${INPUTS[@]}"
     else
-        samtools merge -@8 -f "$TMP" "${INPUTS[@]}"
+        samtools merge -@16 -f "$TMP" "${INPUTS[@]}"
     fi
 fi
 [ -s "$TMP" ] || { log "merge produced nothing"; exit 1; }

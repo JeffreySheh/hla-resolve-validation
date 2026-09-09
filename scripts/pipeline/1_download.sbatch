@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=hla_download
-#SBATCH --output=/hb/scratch/jsheh/hla/pacbio_bam/logs/download_%A_%a.out
+#SBATCH --output=/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam/logs/download_%A_%a.out
 #SBATCH --partition=windfall
 #SBATCH --account=windfall
 #SBATCH --qos=windfall
@@ -9,14 +9,14 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=0
+#SBATCH --mem=8G
 #SBATCH --time=12:00:00
 # Run with: sbatch --array=1-44 --exclude=node-29,node-33,node-34,node-35,node-36 ~/1_download.sbatch
 
 [ -f /software/scripts/utility/requeue.feature ] && source /software/scripts/utility/requeue.feature
 set -uo pipefail
 
-export OUTDIR=${OUTDIR:-/hb/scratch/jsheh/hla/pacbio_bam}
+export OUTDIR=${OUTDIR:-/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam}
 mkdir -p "$OUTDIR"
 
 find_beside() {

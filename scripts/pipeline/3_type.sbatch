@@ -1,23 +1,23 @@
 #!/bin/bash
 #SBATCH --job-name=hla_type
-#SBATCH --output=/hb/scratch/jsheh/hla/pacbio_bam/logs/type_%A_%a.out
+#SBATCH --output=/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam/logs/type_%A_%a.out
 #SBATCH --partition=windfall
 #SBATCH --account=windfall
 #SBATCH --qos=windfall
 #SBATCH --requeue
 #SBATCH --cpus-per-task=12
 #SBATCH --mem=30G
-#SBATCH --time=1-00:00:00
+#SBATCH --time=2-00:00:00
 # STEP 3 of 3: run hla_resolve on each merged bam. Reads any SAMPLE_LIST.
 #   SAMPLE_LIST=~/samples_17.tsv sbatch --array=1-17 ~/3_type.sbatch
 
 [ -f /software/scripts/utility/requeue.feature ] && source /software/scripts/utility/requeue.feature
 set -eo pipefail
 source ~/hla_env.sh
-mkdir -p /hb/scratch/jsheh/hla/singularity_cache
+mkdir -p /mnt/beegfs/cluster/scratch/jsheh/hla/singularity_cache
 module load singularity-ce/singularity-ce.4.1.4 2>/dev/null || module load singularity 2>/dev/null || true
 
-WORK=/hb/scratch/jsheh/hla
+WORK=/mnt/beegfs/cluster/scratch/jsheh/hla
 MERGEDIR=${MERGEDIR:-$WORK/pacbio_bam/merged}
 RESULTS=${RESULTS:-$WORK/results_1kg}
 SAMPLE_LIST=${SAMPLE_LIST:-$HOME/samples_17.tsv}
@@ -44,6 +44,6 @@ hla_resolve \
   --scheme WGS \
   --output_dir "$RESULTS/$SAMPLE" \
   --threads 12 \
-  --clean-up
+  --clean_up
 
 echo "$SAMPLE: typing complete"
