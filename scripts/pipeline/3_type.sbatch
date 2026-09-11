@@ -13,9 +13,7 @@
 
 [ -f /software/scripts/utility/requeue.feature ] && source /software/scripts/utility/requeue.feature
 set -eo pipefail
-source ~/hla_env.sh
 mkdir -p /mnt/beegfs/cluster/scratch/jsheh/hla/singularity_cache
-module load singularity-ce/singularity-ce.4.1.4 2>/dev/null || module load singularity 2>/dev/null || true
 
 WORK=/mnt/beegfs/cluster/scratch/jsheh/hla
 MERGEDIR=${MERGEDIR:-$WORK/pacbio_bam/merged}
