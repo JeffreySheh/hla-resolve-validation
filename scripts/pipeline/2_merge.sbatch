@@ -33,7 +33,7 @@ rm -f "$DONE" "$TMP" "$HDR"
 REVIO=(); SQ2=()
 for f in "$OUTDIR/$SAMPLE"/*.bam; do
     [ -s "$f" ] && [ -f "$OUTDIR/$SAMPLE/.$(basename "$f").done" ] || continue
-    case "$(basename "$f")" in m84*) REVIO+=("$f");; m64*) SQ2+=("$f");; esac
+    case "$(basename "$f")" in m84*) REVIO+=("$f");; m64*|m54*) SQ2+=("$f");; esac
 done
 
 if [[ "$FORCE_SQ2" == *" $SAMPLE "* ]] && [ ${#SQ2[@]} -gt 0 ]; then CHEM="SequelII(forced)"; INPUTS=("${SQ2[@]}")
