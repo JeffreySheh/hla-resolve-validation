@@ -1,0 +1,27 @@
+sample	filename	reason
+HG00099	m54329U_220827_143814-bc2050.5mc.hifi_reads.bam	other prep PG00099_2.HFSS (chose PG00099_1.HFSS)
+HG00099	m54329U_220829_095708-bc2050.5mc.hifi_reads.bam	other prep PG00099_2.HFSS (chose PG00099_1.HFSS)
+HG00128	m84046_230630_233157_s3.bc2069--bc2069.bam	other prep PG00128.HFSS2 (chose PG00128.HFSS)
+HG00133	m84046_230719_001055_s4.hifi_reads.bc2085.bam	other prep PG00133.HFSS2 (chose PG00133.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190607_185248.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190615_010947.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190617_231905.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190619_052546.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190629_180018.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190701_222759.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG00733	HG00733_20190925_EEE_m54329U_190827_173812.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
+HG02040	m84046_230531_221339_s3.hifi_reads.bc2056.bam	other prep PG02040.HFSS2 (chose HG02040.HFSS2)
+HG02922	m64457e_220902_165459-bc2053.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+HG02922	m64457e_220904_135104-bc2053.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+HG02922	m64457e_220906_104717-bc2053.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+HG02922	m54329U_220816_182601-bc2045.5mc.hifi_reads.bam	other prep PG02922.HFSS (chose PG02922.HFSS2)
+HG03583	m84091_230719_172335_s4.hifi_reads.bc1020.bam	under 1 GB: cross-talk stub
+NA18747	m64076_220826_143529-bc2049.5mc.hifi_reads.bam	other prep PG18747_2.HFSS (chose PG18747_1.HFSS)
+NA18747	m64076_220828_113336-bc2049.5mc.hifi_reads.bam	other prep PG18747_2.HFSS (chose PG18747_1.HFSS)
+NA18983	m54329U_220903_190900-bc2055.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+NA18983	m54329U_220905_144015-bc2055.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+NA18983	m54329U_220907_100858-bc2055.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+NA19909	m84081_230609_194256_s2.hifi_reads.bc2001.bam	non-WGS prep: NA19909_Diluted_Ampure
+NA19909	m84081_230728_194836_s2.hifi_reads.bc2029.bam	non-WGS prep: NA19909_Fiber_Seq_Fraction2
+NA19909	m84081_230728_201942_s3.hifi_reads.bc2029.bam	non-WGS prep: NA19909_Fiber_Seq_Fraction2
+NA19909	m84081_231207_200206_s1.hifi_reads.bc2008.bam	non-WGS prep: NA19909_FiberSeq_2

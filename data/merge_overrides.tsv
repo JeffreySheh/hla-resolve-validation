@@ -1,0 +1,7 @@
+# sample	action	pattern	note
+# exclude: drop files matching the regex. prep: <regex>=<name> assigns a prep name.
+NA19909	prep	m84081_230523_180945_s1|m84081_230525_172954_s3=NA19909_Fraction2_Fraction3	HPRC index calls all six cells lib1; BAM LB shows four preps incl. two Fiber-seq
+NA19909	prep	m84081_230609_194256_s2=NA19909_Diluted_Ampure	size-selection test, LB
+NA19909	prep	m84081_230728_19|m84081_230728_20=NA19909_Fiber_Seq_Fraction2	Fiber-seq, LB
+NA19909	prep	m84081_231207_200206_s1=NA19909_FiberSeq_2	Fiber-seq, LB
+HG00280	prep	m54329U_220901_221341=PG00280.HFSS	LB spelled PG00280_HFSS on this cell; same prep as PG00280.HFSS
