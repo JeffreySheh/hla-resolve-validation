@@ -11,7 +11,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
 #SBATCH --time=12:00:00
-# Run with: sbatch --array=1-44 --exclude=node-29,node-33,node-34,node-35,node-36 ~/1_download.sbatch
+# Run with: sbatch --array=1-44 --exclude=node-29,node-31,node-33,node-34,node-35,node-36,node-37 ~/1_download.sbatch
 
 [ -f /software/scripts/utility/requeue.feature ] && source /software/scripts/utility/requeue.feature
 set -uo pipefail
