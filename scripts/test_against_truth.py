@@ -83,7 +83,7 @@ EXCLUDED_ALLELES = {
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KEY_PATH = os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")
-CALLS_PATH = os.path.join(REPO_ROOT, "results", "hla_validation_final.csv")
+CALLS_PATH = os.path.join(REPO_ROOT, "data", "hprc_calls.csv")
 MISSES_PATH = os.path.join(REPO_ROOT, "results", "hla_resolve_misses.txt")
 PER_SAMPLE_PATH = os.path.join(REPO_ROOT, "results", "concordance_by_sample.txt")
 
