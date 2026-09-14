@@ -23,10 +23,20 @@ Rules, per sample
      else the header LB, else "<sample>:untagged" (older ccs.bam carry no tags)
   7. rank preps by depth: summed HPRC-index coverage when every file of the
      prep is indexed, else bytes scaled per file type (ccs.bam without
-     kinetics tags is ~3x denser than hifi_reads/5mc with them). Take the
-     deepest; if it is below MIN_DEPTH add the next and flag the sample. A
-     sample below the floor with nothing to add is flagged too, as is a prep
-     that spans two instruments.
+     kinetics tags is ~3x denser than hifi_reads/5mc with them). The deepest
+     prep is the sample's primary entry; if it is below MIN_DEPTH the next
+     prep is merged in and the entry flagged. Every other prep that reaches
+     MIN_DEPTH on its own becomes a further entry: a different library of the
+     same sample is an independent measurement and is benchmarked separately.
+     Entry ids are <sample>__<prep>, with the prep name made filesystem-safe.
+     A prep that spans two instruments is flagged.
+  8. cap depth: cells of the chosen prep are added in chronological order
+     (movie name) until estimated depth reaches TARGET_DEPTH; once above
+     MIN_DEPTH, a cell that would push past MAX_DEPTH is left out; if the
+     total still exceeds MAX_DEPTH, the smallest cells are shed while the
+     sample stays above the floor. Deep samples otherwise inflate the
+     benchmark. Depth here is the HPRC-index
+     genome-wide value per file (or the bytes estimate), not measured.
 
 Scope
   select_inputs.py [samples.txt] [--refresh]
@@ -36,13 +46,17 @@ Scope
 Overrides (data/merge_overrides.tsv, tab-separated: sample, action, pattern, note)
   exclude  <regex on filename>            drop matching files before rule 5
   prep     <regex on filename>=<name>     assign a prep name (metadata is wrong)
+  depth    <prep name>=<x>                 pin a prep's total depth when neither the
+                                           index nor the byte estimate is right
 
 Outputs
-  data/merge_plan.tsv           sample, prep, filename, size_gb, cov_x, note
+  data/merge_plan.tsv           entry, sample, prep, filename, size_gb, cov_x, note
   data/merge_plan_excluded.tsv  sample, filename, reason
   --refresh also lists S3 and writes data/download_manifest.tsv in the layout
   1_download.sbatch reads (sample, filename, s3 uri, bytes) for files that are
-  on S3 but not on disk, after the filename-level rules. Header-level rules
+  on S3 but not on disk, after the filename-level rules. The listing is
+  recursive: HPRC keeps some cells in subfolders (primrose/) that a plain
+  "aws s3 ls" never shows, and the URI carries the full key. Header-level rules
   (3, 4) can only run once a file is downloaded.
 """
 
@@ -65,6 +79,8 @@ DOWNLOAD = D("download_manifest.tsv")
 
 MIN_FILE_GB = 1.0       # smaller than any real cell; catches demultiplex spill
 MIN_DEPTH = 20.0        # add a second prep only below this
+TARGET_DEPTH = 30.0     # stop adding cells once estimated depth reaches this
+MAX_DEPTH = 40.0        # never add a cell that would exceed this (above MIN_DEPTH)
 # x per GB when a file is not in the HPRC index, measured on this cohort:
 # ccs.bam (no kinetics tags) ~0.23; hifi_reads/5mc with kinetics ~0.08
 X_PER_GB = {"ccs": 0.23, "default": 0.08}
@@ -79,8 +95,13 @@ def est_cov(e):
 
 def instrument(name):
     return "Revio" if name.startswith("m84") else "Sequel II"
+
+
+def entry_id(sample, preps):
+    tag = "+".join(re.sub(r"[^A-Za-z0-9.]+", "_", p).strip("_") for p in preps)
+    return "%s__%s" % (sample, tag)
 S3 = "https://human-pangenomics.s3.amazonaws.com/?list-type=2&prefix=working/%s/%s/raw_data/PacBio_HiFi/"
-S3_URI = "s3://human-pangenomics/working/%s/%s/raw_data/PacBio_HiFi/%s"
+S3_URI = "s3://human-pangenomics/%s"      # full key: files may sit in subfolders (primrose/)
 COHORTS = ("HPRC", "HPRC_PLUS")
 
 MOVIE = re.compile(r"(m\d+[a-zA-Z]*_\d+_\d+(?:_s\d)?)")
@@ -194,6 +215,14 @@ def plan_sample(sample, entries, index, overrides):
     preps = defaultdict(list)
     for e in kept:
         preps[e["prep"]].append(e)
+    # pinned depths: spread evenly over the prep's files so the cap still works
+    for a, p, n in overrides.get(sample, []):
+        if a == "depth" and "=" in p:
+            name, x = p.split("=", 1)
+            if name in preps:
+                for e in preps[name]:
+                    e["cov"] = float(x) / len(preps[name])
+                    e["src"] = "override (depth pinned)"
     if not preps:
         return [], dropped, "no usable files"
 
@@ -204,32 +233,65 @@ def plan_sample(sample, entries, index, overrides):
         return all(e["cov"] is not None for e in preps[p])
 
     order = sorted(preps, key=depth, reverse=True)
-    chosen = [order[0]]
-    notes = []
-    cov0 = depth(order[0])
-    if not indexed(order[0]):
-        notes.append("depth estimated from bytes (%.0fx)" % cov0)
-    if cov0 < MIN_DEPTH:
-        if len(order) > 1:
-            chosen.append(order[1])
-            notes.append("below %gx (%.1fx); second prep %s added" % (MIN_DEPTH, cov0, order[1]))
-        else:
-            notes.append("below %gx (%.1fx); no other prep on disk" % (MIN_DEPTH, cov0))
-    insts = {instrument(e["name"]) for p in chosen for e in preps[p]}
-    if len(insts) > 1:
-        notes.append("prep spans " + " + ".join(sorted(insts)))
-    note = "; ".join(notes)
-    for p in order:
-        if p not in chosen:
-            for e in preps[p]:
-                drop(e, "other prep %s (chose %s)" % (p, chosen[0]))
 
-    rows = []
-    for p in chosen:
-        for e in sorted(preps[p], key=lambda e: e["name"]):
-            rows.append([sample, p, e["name"], "%.1f" % (e["size"] / 1e9),
+    # primary entry: deepest prep, plus the next one only if below the floor
+    entries = []                      # list of (prep list, notes)
+    primary, pnotes = [order[0]], []
+    if not indexed(order[0]):
+        pnotes.append("depth estimated from bytes (%.0fx)" % depth(order[0]))
+    if depth(order[0]) < MIN_DEPTH:
+        if len(order) > 1:
+            primary.append(order[1])
+            pnotes.append("below %gx (%.1fx); second prep %s merged in"
+                          % (MIN_DEPTH, depth(order[0]), order[1]))
+        else:
+            pnotes.append("below %gx (%.1fx); no other prep on disk" % (MIN_DEPTH, depth(order[0])))
+    entries.append((primary, pnotes))
+    # further entries: any remaining prep that stands on its own
+    for p in order:
+        if p in primary:
+            continue
+        if depth(p) >= MIN_DEPTH:
+            entries.append(([p], ["additional library"] +
+                            ([] if indexed(p) else ["depth estimated from bytes (%.0fx)" % depth(p)])))
+        else:
+            for e in preps[p]:
+                drop(e, "prep %s is %.0fx, under %g on its own" % (p, depth(p), MIN_DEPTH))
+
+    rows, notes_out = [], []
+    for chosen, notes in entries:
+        cells = [e for p in chosen for e in preps[p]]
+        cells.sort(key=lambda e: (chosen.index(e["prep"]), movie(e["name"])))
+        insts = {instrument(e["name"]) for e in cells}
+        if len(insts) > 1:
+            notes.append("prep spans " + " + ".join(sorted(insts)))
+        # rule 8: depth cap, chronological within the entry
+        taken, total = [], 0.0
+        for e in cells:
+            c = est_cov(e)
+            if taken and total >= TARGET_DEPTH:
+                drop(e, "depth cap: already %.0fx of %g target" % (total, TARGET_DEPTH)); continue
+            if taken and total >= MIN_DEPTH and total + c > MAX_DEPTH:
+                drop(e, "depth cap: %.0fx + %.0fx would exceed %g" % (total, c, MAX_DEPTH)); continue
+            taken.append(e); total += c
+        while total > MAX_DEPTH and len(taken) > 1:
+            smallest = min(taken, key=est_cov)
+            if total - est_cov(smallest) < MIN_DEPTH:
+                break
+            taken.remove(smallest); total -= est_cov(smallest)
+            drop(smallest, "depth cap: dropped smallest cell to bring %.0fx under %g"
+                 % (total + est_cov(smallest), MAX_DEPTH))
+        if len(taken) < len(cells):
+            notes.append("capped at %d of %d cells (~%.0fx)" % (len(taken), len(cells), total))
+        note = "; ".join(notes)
+        eid = entry_id(sample, chosen)
+        for e in taken:
+            rows.append([eid, sample, e["prep"], e["name"], "%.1f" % (e["size"] / 1e9),
                          "" if e["cov"] is None else "%.1f" % e["cov"],
                          (note + "; " if note else "") + "prep from " + e["src"]])
+        if note:
+            notes_out.append("%s: %s" % (eid, note))
+    note = " | ".join(notes_out)
     return rows, dropped, note
 
 
@@ -250,11 +312,11 @@ def refresh(samples, files):
                 name = key.split("/")[-1]
                 if "fail_reads" in name or movie(name) in on_disk:
                     continue
-                new[movie(name)].append((name, int(size)))
+                new[movie(name)].append((name, key, int(size)))
             for m, cands in new.items():
                 cands.sort(key=lambda c: encoding_rank(c[0]))
-                name, size = cands[0]
-                out.append([s, name, S3_URI % (cohort, s, name), size])
+                name, key, size = cands[0]
+                out.append([s, name, S3_URI % key, size])
             break
     with open(DOWNLOAD, "w", newline="") as fh:
         csv.writer(fh, delimiter="\t", lineterminator="\n").writerows(out)
@@ -288,14 +350,15 @@ def main():
 
     with open(PLAN, "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
-        w.writerow(["sample", "prep", "filename", "size_gb", "cov_x", "note"])
+        w.writerow(["entry", "sample", "prep", "filename", "size_gb", "cov_x", "note"])
         w.writerows(plan)
     with open(EXCLUDED, "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
         w.writerow(["sample", "filename", "reason"])
         w.writerows(excluded)
 
-    print("plan: %d files for %d samples -> %s" % (len(plan), len({r[0] for r in plan}), PLAN))
+    print("plan: %d files, %d entries, %d samples -> %s"
+          % (len(plan), len({r[0] for r in plan}), len({r[1] for r in plan}), PLAN))
     print("excluded: %d files -> %s" % (len(excluded), EXCLUDED))
     reasons = defaultdict(int)
     for _, _, why in excluded:

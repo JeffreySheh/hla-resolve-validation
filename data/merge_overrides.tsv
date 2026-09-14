@@ -5,3 +5,13 @@ NA19909	prep	m84081_230609_194256_s2=NA19909_Diluted_Ampure	size-selection test,
 NA19909	prep	m84081_230728_19|m84081_230728_20=NA19909_Fiber_Seq_Fraction2	Fiber-seq, LB
 NA19909	prep	m84081_231207_200206_s1=NA19909_FiberSeq_2	Fiber-seq, LB
 HG00280	prep	m54329U_220901_221341=PG00280.HFSS	LB spelled PG00280_HFSS on this cell; same prep as PG00280.HFSS
+# HPRC_PLUS Revio pools: not in the HPRC index, so depth is estimated from bytes and badly
+# underestimated (typed at 34-43x). Keep their validated inputs as the single prep.
+HG02145	prep	m84036_230317_175945_s2|m84039_230303_012244_s3|m84039_230314_213047_s2|m84039_230316_193003_s2=HG02145_Revio_validated	validated doc inputs
+HG02109	prep	m84036_230317_175945_s2|m84039_230303_012244_s3|m84039_230314_213047_s2|m84039_230316_193003_s2=HG02109_Revio_validated	validated doc inputs
+HG02055	prep	m84039_230303_005138_s2|m84039_230311_024907_s1|m84039_230314_210032_s1|m84039_230316_185945_s1=HG02055_Revio_validated	validated doc inputs
+HG02723	prep	m84036_230317_175945_s2|m84039_230303_012244_s3|m84039_230314_213047_s2|m84039_230316_193003_s2=HG02723_Revio_validated	validated doc inputs
+HG02145	depth	HG02145_Revio_validated=42.7	measured HLA depth of the validated run
+HG02109	depth	HG02109_Revio_validated=35.4	measured HLA depth of the validated run
+HG02055	depth	HG02055_Revio_validated=34.0	measured HLA depth of the validated run
+HG02723	depth	HG02723_Revio_validated=34.4	measured HLA depth of the validated run

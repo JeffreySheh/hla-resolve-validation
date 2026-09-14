@@ -1,27 +1,199 @@
 sample	filename	reason
-HG00099	m54329U_220827_143814-bc2050.5mc.hifi_reads.bam	other prep PG00099_2.HFSS (chose PG00099_1.HFSS)
-HG00099	m54329U_220829_095708-bc2050.5mc.hifi_reads.bam	other prep PG00099_2.HFSS (chose PG00099_1.HFSS)
-HG00128	m84046_230630_233157_s3.bc2069--bc2069.bam	other prep PG00128.HFSS2 (chose PG00128.HFSS)
-HG00133	m84046_230719_001055_s4.hifi_reads.bc2085.bam	other prep PG00133.HFSS2 (chose PG00133.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190607_185248.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190615_010947.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190617_231905.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190619_052546.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190629_180018.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190701_222759.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG00733	HG00733_20190925_EEE_m54329U_190827_173812.ccs.bam	other prep HG00733:untagged (chose HG00733.HFSS)
-HG02040	m84046_230531_221339_s3.hifi_reads.bc2056.bam	other prep PG02040.HFSS2 (chose HG02040.HFSS2)
+HG00097	m84046_230718_223822_s1.hifi_reads.bc2086.bam	depth cap: already 37x of 30 target
+HG00126	m84046_230621_231827_s1.hifi_reads.bc2043.bam	depth cap: 27x + 18x would exceed 40
+HG00126	m84046_230621_234848_s2.hifi_reads.bc2043.bam	depth cap: 27x + 19x would exceed 40
+HG00133	m84046_230719_001055_s4.hifi_reads.bc2085.bam	prep PG00133.HFSS2 is 8x, under 20 on its own
+HG00133	m84046_230621_231827_s1.hifi_reads.bc2045.bam	depth cap: 28x + 14x would exceed 40
+HG00133	m84046_230621_234848_s2.hifi_reads.bc2045.bam	depth cap: 28x + 16x would exceed 40
+HG00140	m84081_230628_194051_s3.hifi_reads.bc1018.bam	depth cap: already 36x of 30 target
+HG00140	m84081_230628_201157_s4.hifi_reads.bc1018.bam	depth cap: already 36x of 30 target
+HG00146	m84081_230616_185930_s4.hifi_reads.bc2013.bam	depth cap: already 36x of 30 target
+HG00232	m84081_230623_205201_s2.hifi_reads.bc2014.bam	depth cap: 26x + 27x would exceed 40
+HG00232	m84081_230714_212624_s3.hifi_reads.bc2014.bam	depth cap: already 30x of 30 target
+HG00232	m84081_230714_215730_s4.hifi_reads.bc2014.bam	depth cap: already 30x of 30 target
+HG00235	m84091_230724_170222_s4.hifi_reads.bc1008.bam	depth cap: 29x + 32x would exceed 40
+HG00253	m84091_230727_143029_s4.hifi_reads.bc1003.bam	depth cap: already 36x of 30 target
+HG00272	m84046_230718_223822_s1.hifi_reads.bc2087.bam	depth cap: already 37x of 30 target
+HG00272	m84046_230719_001055_s4.hifi_reads.bc2087.bam	depth cap: already 37x of 30 target
+HG00280	m64457e_220825_195635-bc2051.5mc.hifi_reads.bam	depth cap: 27x + 15x would exceed 40
+HG00280	m84046_230628_213236_s2.hifi_reads.bc2051.bam	depth cap: 27x + 18x would exceed 40
+HG00290	m84046_230627_204123_s2.hifi_reads.bc2052.bam	depth cap: already 33x of 30 target
+HG00290	m84046_230630_233157_s3.bc2052--bc2052.bam	depth cap: already 33x of 30 target
+HG00290	m84046_230712_224626_s1.hifi_reads.bc2052.bam	depth cap: already 33x of 30 target
+HG00320	m84081_230610_205536_s4.hifi_reads.bc2011.bam	depth cap: 29x + 40x would exceed 40
+HG00321	m84081_230623_215414_s4.hifi_reads.bc2015.bam	depth cap: 28x + 28x would exceed 40
+HG00321	m84081_230630_193909_s2.hifi_reads.bc2015.bam	depth cap: already 30x of 30 target
+HG00323	m84081_230623_212309_s3.hifi_reads.bc1016.bam	depth cap: already 35x of 30 target
+HG00323	m84081_230623_215414_s4.hifi_reads.bc1016.bam	depth cap: already 35x of 30 target
+HG00323	m84081_230624_203119_s1.hifi_reads.bc1016.bam	depth cap: already 35x of 30 target
+HG00323	m84081_230624_210225_s2.hifi_reads.bc1016.bam	depth cap: already 35x of 30 target
+HG00323	m84081_230624_213331_s3.hifi_reads.bc1016.bam	depth cap: already 35x of 30 target
+HG00323	m84081_230624_220437_s4.hifi_reads.bc1016.bam	depth cap: already 35x of 30 target
+HG00344	m84046_230718_233949_s3.hifi_reads.bc2083.bam	depth cap: already 40x of 30 target
+HG00344	m84046_230715_060901_s1.hifi_reads.bc2083.bam	depth cap: dropped smallest cell to bring 40x under 40
+HG00350	m84046_230703_222200_s3.hifi_reads.bc2048.bam	depth cap: 21x + 38x would exceed 40
+HG00438	m64043_200714_124814.ccs.bam	depth cap: already 30x of 30 target
+HG00673	m84081_231222_081401_s1.hifi_reads.bc2028.bam	depth cap: already 40x of 30 target
+HG00673	m84081_231222_101332_s2.hifi_reads.bc2028.bam	depth cap: already 40x of 30 target
+HG00673	m84081_231222_121301_s3.hifi_reads.bc2028.bam	depth cap: already 40x of 30 target
+HG00673	m84081_231222_141231_s4.hifi_reads.bc2028.bam	depth cap: already 40x of 30 target
+HG00733	m64076_211218_173901.hifi_reads.bam	depth cap: already 37x of 30 target
+HG00733	m64076_211221_015212.hifi_reads.bam	depth cap: already 37x of 30 target
+HG00735	m64043_200706_123423.ccs.bam	depth cap: already 34x of 30 target
+HG00741	m84081_231222_081401_s1.hifi_reads.bc2024.bam	depth cap: already 38x of 30 target
+HG00741	m84081_231222_101332_s2.hifi_reads.bc2024.bam	depth cap: already 38x of 30 target
+HG00741	m84081_231222_121301_s3.hifi_reads.bc2024.bam	depth cap: already 38x of 30 target
+HG00741	m84081_231222_141231_s4.hifi_reads.bc2024.bam	depth cap: already 38x of 30 target
+HG01071	m84081_231222_081401_s1.hifi_reads.bc2026.bam	depth cap: already 35x of 30 target
+HG01071	m84081_231222_101332_s2.hifi_reads.bc2026.bam	depth cap: already 35x of 30 target
+HG01071	m84081_231222_121301_s3.hifi_reads.bc2026.bam	depth cap: already 35x of 30 target
+HG01071	m84081_231222_141231_s4.hifi_reads.bc2026.bam	depth cap: already 35x of 30 target
+HG01106	m64043_200629_125238.ccs.bam	depth cap: already 35x of 30 target
+HG01167	m84091_230731_140439_s3.hifi_reads.bc1012.bam	depth cap: already 34x of 30 target
+HG01167	m84091_230817_153352_s4.hifi_reads.bc1012.bam	depth cap: already 34x of 30 target
+HG01175	m84081_231222_081401_s1.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
+HG01175	m84081_231222_101332_s2.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
+HG01175	m84081_231222_121301_s3.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
+HG01175	m84081_231222_141231_s4.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
+HG01358	m84046_231202_071034_s1.hifi_reads.bc2053.bam	prep HG01358.HFSS2 is 15x, under 20 on its own
+HG01358	m84046_231202_110908_s4.hifi_reads.bc2053.bam	prep HG01358.HFSS2 is 15x, under 20 on its own
+HG01361	m84046_230724_203319_s4.hifi_reads.bc2056.bam	prep HG01361.HFSS2 is 14x, under 20 on its own
+HG01786	m84081_230616_175717_s2.hifi_reads.bc2012.bam	depth cap: already 36x of 30 target
+HG01928	m84081_231222_081401_s1.hifi_reads.bc2022.bam	depth cap: already 35x of 30 target
+HG01928	m84081_231222_101332_s2.hifi_reads.bc2022.bam	depth cap: already 35x of 30 target
+HG01928	m84081_231222_121301_s3.hifi_reads.bc2022.bam	depth cap: already 35x of 30 target
+HG01928	m84081_231222_141231_s4.hifi_reads.bc2022.bam	depth cap: already 35x of 30 target
+HG01952	m64136_200617_080019.ccs.bam	depth cap: already 31x of 30 target
+HG01952	m84081_231222_081401_s1.hifi_reads.bc2029.bam	depth cap: already 31x of 30 target
+HG01952	m84081_231222_101332_s2.hifi_reads.bc2029.bam	depth cap: already 31x of 30 target
+HG01952	m84081_231222_121301_s3.hifi_reads.bc2029.bam	depth cap: already 31x of 30 target
+HG01952	m84081_231222_141231_s4.hifi_reads.bc2029.bam	depth cap: already 31x of 30 target
+HG01978	m84081_231222_081401_s1.hifi_reads.bc2021.bam	depth cap: already 38x of 30 target
+HG01978	m84081_231222_101332_s2.hifi_reads.bc2021.bam	depth cap: already 38x of 30 target
+HG01978	m84081_231222_121301_s3.hifi_reads.bc2021.bam	depth cap: already 38x of 30 target
+HG01978	m84081_231222_141231_s4.hifi_reads.bc2021.bam	depth cap: already 38x of 30 target
+HG02040	m84046_230531_221339_s3.hifi_reads.bc2056.bam	prep PG02040.HFSS2 is 15x, under 20 on its own
+HG02040	m64076_220912_140850-bc2056.5mc.hifi_reads.bam	depth cap: 28x + 14x would exceed 40
+HG02055	m64136_201014_213617.ccs.bam	prep HG02055_Fraction2_480c6q is 19x, under 20 on its own
+HG02055	m64136_201016_205143.ccs.bam	prep HG02055_Fraction2_480c6q is 19x, under 20 on its own
+HG02055	m64136_201018_030620.ccs.bam	prep HG02055_Fraction2_480c6q is 19x, under 20 on its own
+HG02055	m64136_201107_033114.ccs.bam	prep HG02055_Fraction1_480c6q is 8x, under 20 on its own
+HG02109	m64136_200928_195239.ccs.bam	prep HG02109_ELF_Fractions2_3_480c6l is 13x, under 20 on its own
+HG02109	m64136_200930_020708.ccs.bam	prep HG02109_ELF_Fractions2_3_480c6l is 13x, under 20 on its own
+HG02109	m64136_200924_175741.ccs.bam	prep HG02109_ELF2_3_480c6l is 7x, under 20 on its own
+HG02145	m64043_200928_195132.ccs.bam	prep HG02145_ELF_Fraction2_480c6k is 10x, under 20 on its own
+HG02145	m64043_200930_020605.ccs.bam	prep HG02145_ELF_Fraction2_480c6k is 10x, under 20 on its own
+HG02145	m64136_201019_093412.ccs.bam	prep HG02145_Fraction3_480c6k is 7x, under 20 on its own
+HG02145	m64043_200924_175630.ccs.bam	prep HG02145_ELF2_480c6k is 6x, under 20 on its own
+HG02145	m84039_230316_193003_s2.hifi_reads.bc2014.bam	depth cap: already 32x of 30 target
+HG02148	m64136_200623_061529.ccs.bam	depth cap: already 30x of 30 target
+HG02148	m84081_231222_081401_s1.hifi_reads.bc2023.bam	depth cap: already 30x of 30 target
+HG02148	m84081_231222_101332_s2.hifi_reads.bc2023.bam	depth cap: already 30x of 30 target
+HG02148	m84081_231222_121301_s3.hifi_reads.bc2023.bam	depth cap: already 30x of 30 target
+HG02148	m84081_231222_141231_s4.hifi_reads.bc2023.bam	depth cap: already 30x of 30 target
+HG02155	m84081_230628_194051_s3.hifi_reads.bc1012.bam	depth cap: already 35x of 30 target
+HG02155	m84081_230628_201157_s4.hifi_reads.bc1012.bam	depth cap: already 35x of 30 target
+HG02165	m64076_220906_083112-bc2054.5mc.hifi_reads.bam	depth cap: 29x + 14x would exceed 40
+HG02165	m84046_230617_040148_s2.hifi_reads.bc2054.bam	depth cap: 29x + 15x would exceed 40
+HG02178	m84091_230705_181402_s3.hifi_reads.bc1008.bam	depth cap: 21x + 29x would exceed 40
+HG02392	m84091_230705_171239_s1.hifi_reads.bc1002.bam	depth cap: 21x + 23x would exceed 40
+HG02392	m84091_230727_143029_s4.hifi_reads.bc1002.bam	depth cap: already 34x of 30 target
+HG02392	m84091_230817_153352_s4.hifi_reads.bc1002.bam	depth cap: already 34x of 30 target
+HG02572	m54329U_210527_060352.hifi_reads.bam	prep HG02572_HFSS3 is 7x, under 20 on its own
+HG02572	m64076_210502_044702.hifi_reads.bam	prep HG02572.HFSS is 0x, under 20 on its own
+HG02583	m84091_230714_140949_s3.hifi_reads.bc1016.bam	depth cap: already 32x of 30 target
+HG02622	m64043_200604_075218.ccs.bam	depth cap: already 35x of 30 target
+HG02630	m64043_200505_112554.ccs.bam	depth cap: already 37x of 30 target
+HG02717	m64043_200408_064651.ccs.bam	depth cap: already 34x of 30 target
+HG02886	m64043_200414_165107.ccs.bam	depth cap: already 33x of 30 target
 HG02922	m64457e_220902_165459-bc2053.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
 HG02922	m64457e_220904_135104-bc2053.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
 HG02922	m64457e_220906_104717-bc2053.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
-HG02922	m54329U_220816_182601-bc2045.5mc.hifi_reads.bam	other prep PG02922.HFSS (chose PG02922.HFSS2)
+HG02922	m54329U_220816_182601-bc2045.5mc.hifi_reads.bam	prep PG02922.HFSS is 6x, under 20 on its own
+HG02922	m54329U_220907_100858-bc2053.5mc.hifi_reads.bam	depth cap: 29x + 14x would exceed 40
+HG02965	m84081_230628_183924_s1.hifi_reads.bc1017.bam	depth cap: already 38x of 30 target
+HG02965	m84081_230628_190945_s2.hifi_reads.bc1017.bam	depth cap: already 38x of 30 target
+HG02976	m64043_220726_203720-bc1009.5mc.hifi_reads.bam	depth cap: already 32x of 30 target
+HG02976	m84081_230630_190803_s1.hifi_reads.bc1009.bam	depth cap: already 32x of 30 target
+HG02976	m84081_230630_193909_s2.hifi_reads.bc1009.bam	depth cap: already 32x of 30 target
+HG03130	m84046_230602_213334_s2.hifi_reads.bc2018.bam	depth cap: already 38x of 30 target
+HG03139	m54329U_220525_111437-bc2019.5mc.hifi_reads.bam	depth cap: 27x + 14x would exceed 40
+HG03139	m84046_230623_210640_s1.hifi_reads.bc2019.bam	depth cap: already 37x of 30 target
+HG03195	m84081_230628_183924_s1.hifi_reads.bc1010.bam	depth cap: already 35x of 30 target
+HG03195	m84081_230628_190945_s2.hifi_reads.bc1010.bam	depth cap: already 35x of 30 target
+HG03195	m84081_230715_203436_s1.hifi_reads.bc1010.bam	depth cap: already 35x of 30 target
+HG03195	m84081_230715_210542_s2.hifi_reads.bc1010.bam	depth cap: already 35x of 30 target
+HG03195	m84081_230715_213648_s3.hifi_reads.bc1010.bam	depth cap: already 35x of 30 target
+HG03195	m84081_230715_220754_s4.hifi_reads.bc1010.bam	depth cap: already 35x of 30 target
+HG03209	m64076_221001_041132-bc2020.5mc.hifi_reads.bam	depth cap: already 33x of 30 target
+HG03209	m84046_230617_033126_s1.hifi_reads.bc2020.bam	depth cap: already 33x of 30 target
+HG03225	m84081_230630_201015_s3.hifi_reads.bc1008.bam	depth cap: already 36x of 30 target
+HG03225	m84081_230630_204121_s4.hifi_reads.bc1008.bam	depth cap: already 36x of 30 target
+HG03270	m84091_230710_183139_s4.hifi_reads.bc1015.bam	depth cap: already 36x of 30 target
+HG03369	m84091_230727_135923_s3.hifi_reads.bc1009.bam	depth cap: 30x + 32x would exceed 40
+HG03521	m84046_230718_230843_s2.hifi_reads.bc2084.bam	depth cap: already 35x of 30 target
+HG03540	m64043_200525_121851.ccs.bam	depth cap: already 38x of 30 target
+HG03579	m64043_200519_115622.ccs.bam	depth cap: already 36x of 30 target
 HG03583	m84091_230719_172335_s4.hifi_reads.bc1020.bam	under 1 GB: cross-talk stub
-NA18747	m64076_220826_143529-bc2049.5mc.hifi_reads.bam	other prep PG18747_2.HFSS (chose PG18747_1.HFSS)
-NA18747	m64076_220828_113336-bc2049.5mc.hifi_reads.bam	other prep PG18747_2.HFSS (chose PG18747_1.HFSS)
+HG03583	m84091_230727_132817_s2.hifi_reads.bc1020.bam	depth cap: 29x + 24x would exceed 40
+HG03784	m84081_230624_220437_s4.hifi_reads.bc2017.bam	depth cap: already 33x of 30 target
+HG03874	m84091_230719_155016_s1.hifi_reads.bc1012.bam	depth cap: 25x + 33x would exceed 40
+NA18505	m84091_230721_152112_s4.hifi_reads.bc1021.bam	depth cap: 30x + 30x would exceed 40
+NA18508	m84046_230516_205603_s2.hifi_reads.bc2001.bam	depth cap: 21x + 20x would exceed 40
+NA18508	m84046_230516_212709_s3.hifi_reads.bc2001.bam	depth cap: 21x + 20x would exceed 40
+NA18522	m54329U_220607_194753-bc2021.5mc.hifi_reads.bam	depth cap: 27x + 15x would exceed 40
+NA18522	m84046_230603_204152_s4.hifi_reads.bc2021.bam	depth cap: already 38x of 30 target
+NA18565	m84081_230714_205519_s2.hifi_reads.bc2020.bam	depth cap: 26x + 29x would exceed 40
+NA18608	m84081_230623_202140_s1.hifi_reads.bc2007.bam	depth cap: already 53x of 30 target
+NA18608	m84081_230623_205201_s2.hifi_reads.bc2007.bam	depth cap: already 53x of 30 target
+NA18608	m84081_230601_202307_s1.hifi_reads.bc2007.bam	depth cap: dropped smallest cell to bring 53x under 40
+NA18620	m84091_230707_165735_s1.hifi_reads.bc1009.bam	depth cap: already 34x of 30 target
+NA18879	m84046_230728_205153_s4.hifi_reads.bc2089.bam	depth cap: already 34x of 30 target
+NA18879	m84046_230731_200859_s2.hifi_reads.bc2089.bam	depth cap: already 34x of 30 target
+NA18952	m84081_230609_204508_s4.hifi_reads.bc2009.bam	depth cap: already 37x of 30 target
+NA18971	m64043_220728_173215-bc1011.5mc.hifi_reads.bam	depth cap: already 32x of 30 target
+NA18971	m84081_230628_183924_s1.hifi_reads.bc1011.bam	depth cap: already 32x of 30 target
+NA18971	m84081_230628_190945_s2.hifi_reads.bc1011.bam	depth cap: already 32x of 30 target
+NA18974	m84081_230601_220550_s4.hifi_reads.bc2008.bam	depth cap: already 40x of 30 target
+NA18976	m84081_230610_195324_s2.hifi_reads.bc2010.bam	depth cap: already 36x of 30 target
 NA18983	m54329U_220903_190900-bc2055.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
 NA18983	m54329U_220905_144015-bc2055.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
 NA18983	m54329U_220907_100858-bc2055.5mc.hifi_reads.bam	under 1 GB: cross-talk stub
+NA18983	m64457e_220906_104717-bc2055.5mc.hifi_reads.bam	depth cap: 28x + 14x would exceed 40
+NA18983	m84046_230623_210640_s1.hifi_reads.bc2055.bam	depth cap: 28x + 18x would exceed 40
+NA19036	m84091_230724_152950_s1.hifi_reads.bc1022.bam	depth cap: already 32x of 30 target
+NA19043	m54329U_220920_065703-bc2061.5mc.hifi_reads.bam	depth cap: 27x + 14x would exceed 40
+NA19043	m84046_230712_000908_s4.hifi_reads.bc2061.bam	depth cap: already 36x of 30 target
+NA19443	m84046_230627_204123_s2.hifi_reads.bc2053.bam	depth cap: already 33x of 30 target
+NA19443	m84046_230701_000218_s4.hifi_reads.bc2053.bam	depth cap: already 33x of 30 target
+NA19443	m84046_230712_231732_s2.hifi_reads.bc2053.bam	depth cap: already 33x of 30 target
+NA19682	m84046_230504_202347_s2.hifi_reads.bc2090.bam	depth cap: already 33x of 30 target
+NA19682	m84046_230508_193709_s3.hifi_reads.bc2090.bam	depth cap: already 33x of 30 target
+NA19700	m84046_230502_210601_s4.hifi_reads.bc2091.bam	depth cap: 30x + 15x would exceed 40
+NA19700	m84046_230508_200815_s4.hifi_reads.bc2091.bam	depth cap: 30x + 16x would exceed 40
+NA19776	m84046_230516_205603_s2.hifi_reads.bc2014.bam	depth cap: 21x + 21x would exceed 40
+NA19776	m84046_230516_212709_s3.hifi_reads.bc2014.bam	depth cap: 21x + 21x would exceed 40
+NA19835	m84091_230724_160010_s2.hifi_reads.bc1001.bam	depth cap: 29x + 31x would exceed 40
 NA19909	m84081_230609_194256_s2.hifi_reads.bc2001.bam	non-WGS prep: NA19909_Diluted_Ampure
 NA19909	m84081_230728_194836_s2.hifi_reads.bc2029.bam	non-WGS prep: NA19909_Fiber_Seq_Fraction2
 NA19909	m84081_230728_201942_s3.hifi_reads.bc2029.bam	non-WGS prep: NA19909_Fiber_Seq_Fraction2
 NA19909	m84081_231207_200206_s1.hifi_reads.bc2008.bam	non-WGS prep: NA19909_FiberSeq_2
+NA19909	m84081_230525_172954_s3.hifi_reads.bc2005.bam	depth cap: already 31x of 30 target
+NA20282	m84081_230519_180923_s3.hifi_reads.bc2004.bam	depth cap: already 36x of 30 target
+NA20346	m84081_230525_180017_s4.hifi_reads.bc2006.bam	depth cap: 28x + 32x would exceed 40
+NA20752	m64457e_220831_195843-bc2052.5mc.hifi_reads.bam	depth cap: already 31x of 30 target
+NA20752	m84046_230517_211630_s4.hifi_reads.bc2052.bam	depth cap: already 31x of 30 target
+NA20805	m84081_230728_191731_s1.hifi_reads.bc2027.bam	depth cap: already 39x of 30 target
+NA20809	m84081_230715_210542_s2.hifi_reads.bc2022.bam	depth cap: 28x + 28x would exceed 40
+NA20850	m84046_230721_182333_s4.hifi_reads.bc2092.bam	depth cap: 21x + 20x would exceed 40
+NA20850	m84046_230721_185439_s1.hifi_reads.bc2092.bam	depth cap: 21x + 19x would exceed 40
+NA20870	m84091_230707_172800_s2.hifi_reads.bc1010.bam	depth cap: already 36x of 30 target
+NA20905	m64076_220918_143117-bc2060.5mc.hifi_reads.bam	depth cap: 28x + 14x would exceed 40
+NA20905	m84046_230623_210640_s1.hifi_reads.bc2060.bam	depth cap: already 35x of 30 target
+NA21093	m84046_230504_202347_s2.hifi_reads.bc2094.bam	depth cap: already 36x of 30 target
+NA21093	m84046_230508_193709_s3.hifi_reads.bc2094.bam	depth cap: already 36x of 30 target
+NA21102	m84081_230715_220754_s4.hifi_reads.bc2023.bam	depth cap: 29x + 29x would exceed 40
+NA21106	m84046_230504_212559_s4.hifi_reads.bc2089.bam	depth cap: already 39x of 30 target
+NA21106	m84046_230508_200815_s4.hifi_reads.bc2089.bam	depth cap: already 39x of 30 target
+NA21110	m84091_230714_133843_s2.hifi_reads.bc1011.bam	depth cap: 29x + 28x would exceed 40
+NA21144	m84081_230629_192021_s2.hifi_reads.bc2018.bam	depth cap: already 36x of 30 target
