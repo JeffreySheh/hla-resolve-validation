@@ -196,6 +196,11 @@ def load_key(path):
     return key
 
 
+def key_sample(entry):
+    """Truth is keyed by sample; a plan-driven run is keyed by <sample>__<prep>."""
+    return entry.split("__", 1)[0]
+
+
 def load_calls(path):
     """Results CSV. Rows without a coverage value are separators, not data."""
     calls, coverage = {}, {}
@@ -318,7 +323,7 @@ def write_misses(key, calls, graded):
     rows = []
     for sample in graded:
         for gene in GENES:
-            scores = {n: grade_gene(key[sample][gene], calls[sample][gene], n)
+            scores = {n: grade_gene(key[key_sample(sample)][gene], calls[sample][gene], n)
                       for n in DEPTHS}
             if not any(d and h < d for h, d in scores.values()):
                 continue
@@ -345,7 +350,7 @@ def write_misses(key, calls, graded):
                                for n in DEPTHS)
             fh.write("\n%-8s %-5s %s   [%s]\n" % (sample, gene, detail, tag))
             fh.write("         call  %s\n" % " / ".join(calls[sample][gene]))
-            fh.write("         truth %s\n" % " / ".join(key[sample][gene]))
+            fh.write("         truth %s\n" % " / ".join(key[key_sample(sample)][gene]))
         if not rows:
             fh.write("\nnone\n")
     return len(rows)
@@ -380,7 +385,7 @@ def write_per_sample(key, calls, coverage, graded):
             for n in DEPTHS:
                 hits = denom = 0
                 for gene in GENES:
-                    h, d = grade_gene(key[sample][gene], calls[sample][gene], n)
+                    h, d = grade_gene(key[key_sample(sample)][gene], calls[sample][gene], n)
                     hits += h
                     denom += d
                 row.append("%d/%d" % (hits, denom))
@@ -394,7 +399,7 @@ def main():
     calls, coverage = load_calls(CALLS_PATH)
     apply_exclusions(key)
 
-    missing = sorted(set(calls) - set(key))
+    missing = sorted({key_sample(s) for s in calls} - set(key))
     if missing:
         sys.exit("ERROR: samples called but absent from the key: %s" % missing)
 
@@ -427,7 +432,7 @@ def main():
     for sample in graded:
         for gene in GENES:
             for n in DEPTHS:
-                h, d = grade_gene(key[sample][gene], calls[sample][gene], n)
+                h, d = grade_gene(key[key_sample(sample)][gene], calls[sample][gene], n)
                 per_gene[n][gene][0] += h
                 per_gene[n][gene][1] += d
 

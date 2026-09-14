@@ -2,6 +2,11 @@
 """
 Audit hla_resolve raw output on the cluster.
 
+Directory names are taken as sample ids. A plan-driven run names its output
+directory by entry (<sample>__<prep>); the audit keeps the entry id as the
+first column so a sample typed from two libraries appears twice, and looks
+for results under <entry>/<sample>/ and the log at <entry>/<sample>.hla_resolve.log.
+
 Reads each sample's hla_typing_results/allele_output.csv plus the coverage
 data, so the result is independent of however the results spreadsheet was
 assembled.
@@ -75,9 +80,15 @@ def resolve_dir(root, sample):
     base = os.path.join(root, sample)
     marker = os.path.join("hla_typing_results", "allele_output.csv")
 
+    # A directory may be an entry id <sample>__<prep> (plan-driven runs);
+    # hla_resolve then nests the bare sample name inside it.
+    bare = sample.split("__", 1)[0]
+
     cands = []
     if SUBDIR:
         cands.append((os.path.join(base, SUBDIR), SUBDIR))
+    if bare != sample:
+        cands.append((os.path.join(base, bare), "<entry>/<sample> (plan-driven run)"))
     cands.append((os.path.join(base, sample), "<sample>/<sample> (hla_resolve nesting)"))
     cands.append((base, "flat"))
 
@@ -107,9 +118,10 @@ def read_alleles(sample_dir):
 
 def find_log(sample_dir, sample):
     parent = os.path.dirname(sample_dir)
-    for cand in (os.path.join(sample_dir, "%s.hla_resolve.log" % sample),
+    bare = sample.split("__", 1)[0]
+    for cand in (os.path.join(sample_dir, "%s.hla_resolve.log" % bare),
                  os.path.join(sample_dir, "hla_resolve.log"),
-                 os.path.join(parent, "%s.hla_resolve.log" % sample)):
+                 os.path.join(parent, "%s.hla_resolve.log" % bare)):
         if os.path.exists(cand):
             return cand
     return None

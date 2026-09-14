@@ -104,10 +104,10 @@ def main():
                    "alleles_called": "%d/16" % n_called}
             for n in (1, 2, 3, 4):
                 if n in depths:
-                    h, d = grade(key[s], calls[s], genes, n)
+                    h, d = grade(key[T.key_sample(s)], calls[s], genes, n)
                     row["%df" % n] = "%d/%d" % (h, d)
                     for g in genes:
-                        a, b = T.grade_gene(key[s][g], calls[s][g], n)
+                        a, b = T.grade_gene(key[T.key_sample(s)][g], calls[s][g], n)
                         per_gene[n][g][0] += a
                         per_gene[n][g][1] += b
                 else:
@@ -116,7 +116,7 @@ def main():
             if not (name == "1kgp" and s in SAME_LIBRARY):
                 combined_n += 1
                 for n in (1, 2):
-                    h, d = grade(key[s], calls[s], SHARED_GENES, n)
+                    h, d = grade(key[T.key_sample(s)], calls[s], SHARED_GENES, n)
                     combined[n][0] += h
                     combined[n][1] += d
         tables[name] = (len(calls), called, expected, depths, genes, per_gene)

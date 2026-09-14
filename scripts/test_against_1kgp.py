@@ -79,7 +79,7 @@ def write_calls(audit_path, key_samples, out_path):
     alleles = read_block(audit_path, "BLOCK1 ALLELE CALLS")
     coverage = read_block(audit_path, "BLOCK2 COVERAGE SUMMARY")
 
-    samples = sorted(s for s in alleles if s in key_samples)
+    samples = sorted(s for s in alleles if T.key_sample(s) in key_samples)
     failed = []
     with open(out_path, "w", newline="") as fh:
         w = csv.writer(fh)
@@ -118,7 +118,7 @@ def depth_gated_report(depths):
                 dropped.append((s, g, d))
                 continue
             for n in T.DEPTHS:
-                h, dd = T.grade_gene(key[s][g], calls[s][g], n)
+                h, dd = T.grade_gene(key[T.key_sample(s)][g], calls[s][g], n)
                 per_gene[n][g][0] += h
                 per_gene[n][g][1] += dd
 
