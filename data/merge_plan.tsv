@@ -44,6 +44,10 @@ HG00350__PG00350.HFSS	HG00350	PG00350.HFSS	m84046_230712_231732_s2.hifi_reads.bc
 HG00438__HG00438_lib1	HG00438	HG00438_lib1	m64043_200710_174426.ccs.bam	33.8	11.3	capped at 3 of 4 cells (~30x); prep from index
 HG00438__HG00438_lib1	HG00438	HG00438_lib1	m64043_200711_235708.ccs.bam	26.0	8.4	capped at 3 of 4 cells (~30x); prep from index
 HG00438__HG00438_lib1	HG00438	HG00438_lib1	m64043_200713_062240.ccs.bam	31.3	10.6	capped at 3 of 4 cells (~30x); prep from index
+HG00621__HG00621_lib1	HG00621	HG00621_lib1	m64136_200710_174522.ccs.bam	30.6	10.4	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
+HG00621__HG00621_lib1	HG00621	HG00621_lib1	m64136_200711_235843.ccs.bam	28.5	9.6	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
+HG00621__HG00621_lib1	HG00621	HG00621_lib1	m64136_200713_062514.ccs.bam	28.0	9.4	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
+HG00621__HG00621_lib1	HG00621	HG00621_lib1	m64136_200714_125149.ccs.bam	29.4	10.1	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
 HG00673__HG00673_lib1	HG00673	HG00673_lib1	m64043_200716_182902.ccs.bam	27.2	9.3	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
 HG00673__HG00673_lib1	HG00673	HG00673_lib1	m64043_200718_004213.ccs.bam	30.6	10.2	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
 HG00673__HG00673_lib1	HG00673	HG00673_lib1	m64043_200719_070806.ccs.bam	30.9	10.3	prep spans Revio + Sequel II; capped at 4 of 8 cells (~40x); prep from index
@@ -116,6 +120,9 @@ HG02055__HG02055_Revio_validated	HG02055	HG02055_Revio_validated	m84039_230303_0
 HG02055__HG02055_Revio_validated	HG02055	HG02055_Revio_validated	m84039_230311_024907_s1.hifi_reads.bc2010.bam	15.1	8.5	prep from override (depth pinned)
 HG02055__HG02055_Revio_validated	HG02055	HG02055_Revio_validated	m84039_230314_210032_s1.hifi_reads.bc2010.bam	20.5	8.5	prep from override (depth pinned)
 HG02055__HG02055_Revio_validated	HG02055	HG02055_Revio_validated	m84039_230316_185945_s1.hifi_reads.bc2010.bam	20.1	8.5	prep from override (depth pinned)
+HG02080__HG02080_ELF2_480c6e	HG02080	HG02080_ELF2_480c6e	m64043_200904_190723.ccs.bam	30.7	12.0	prep from override (depth pinned)
+HG02080__HG02080_ELF2_480c6e	HG02080	HG02080_ELF2_480c6e	m64043_200906_012211.ccs.bam	37.9	12.0	prep from override (depth pinned)
+HG02080__HG02080_ELF2_480c6e	HG02080	HG02080_ELF2_480c6e	m64043_200907_074948.ccs.bam	33.5	12.0	prep from override (depth pinned)
 HG02109__HG02109_Revio_validated	HG02109	HG02109_Revio_validated	m84036_230317_175945_s2.hifi_reads.bc2013.bam	19.4	8.8	prep from override (depth pinned)
 HG02109__HG02109_Revio_validated	HG02109	HG02109_Revio_validated	m84039_230303_012244_s3.hifi_reads.bc2013.bam	15.8	8.8	prep from override (depth pinned)
 HG02109__HG02109_Revio_validated	HG02109	HG02109_Revio_validated	m84039_230314_213047_s2.hifi_reads.bc2013.bam	18.0	8.8	prep from override (depth pinned)
@@ -206,12 +213,18 @@ HG03225__HG03225_lib1	HG03225	HG03225_lib1	m64043_220726_203720-bc1008.5mc.hifi_
 HG03225__HG03225_lib1	HG03225	HG03225_lib1	m64136_220518_004520-bc1008.5mc.hifi_reads.bam	102.8	8.7	prep spans Revio + Sequel II; capped at 4 of 6 cells (~36x); prep from index
 HG03270__HG03270_PB1	HG03270	HG03270_PB1	m84091_230707_175906_s3.hifi_reads.bc1015.bam	485.0	36.2	capped at 1 of 2 cells (~36x); prep from index
 HG03369__HG03369_PB1	HG03369	HG03369_PB1	m84091_230721_145006_s3.hifi_reads.bc1009.bam	402.0	29.6	capped at 1 of 2 cells (~30x); prep from index
+HG03453__HG03453_lib1	HG03453	HG03453_lib1	m64043_200508_172634.ccs.bam	35.5	13.1	capped at 3 of 4 cells (~39x); prep from index
+HG03453__HG03453_lib1	HG03453	HG03453_lib1	m64043_200509_233929.ccs.bam	36.4	13.4	capped at 3 of 4 cells (~39x); prep from index
+HG03453__HG03453_lib1	HG03453	HG03453_lib1	m64043_200511_060458.ccs.bam	34.6	12.8	capped at 3 of 4 cells (~39x); prep from index
 HG03470__HG03470_PB1	HG03470	HG03470_PB1	m84091_230705_174256_s2.hifi_reads.bc1009.bam	147.3	11.1	prep from index
 HG03470__HG03470_PB1	HG03470	HG03470_PB1	m84091_230705_184508_s4.hifi_reads.bc1009.bam	142.8	11.0	prep from index
 HG03486__HG03486_untagged	HG03486	HG03486:untagged	m64043_200424_162541.ccs.bam	27.2		depth estimated from bytes (25x); prep from untagged
 HG03486__HG03486_untagged	HG03486	HG03486:untagged	m64043_200425_223840.ccs.bam	27.9		depth estimated from bytes (25x); prep from untagged
 HG03486__HG03486_untagged	HG03486	HG03486:untagged	m64043_200428_155222.ccs.bam	27.8		depth estimated from bytes (25x); prep from untagged
 HG03486__HG03486_untagged	HG03486	HG03486:untagged	m64043_200429_220517.ccs.bam	25.7		depth estimated from bytes (25x); prep from untagged
+HG03492__HG03492_ELF2_ELF3_480c6f	HG03492	HG03492_ELF2_ELF3_480c6f	m64136_200904_190830.ccs.bam	31.5	12.3	prep from override (depth pinned)
+HG03492__HG03492_ELF2_ELF3_480c6f	HG03492	HG03492_ELF2_ELF3_480c6f	m64136_200906_012331.ccs.bam	33.4	12.3	prep from override (depth pinned)
+HG03492__HG03492_ELF2_ELF3_480c6f	HG03492	HG03492_ELF2_ELF3_480c6f	m64136_200907_075143.ccs.bam	35.3	12.3	prep from override (depth pinned)
 HG03516__HG03516_HiFiEx_mix	HG03516	HG03516_HiFiEx_mix	m54329U_200610_234222.ccs.bam	29.7	10.6	prep from index
 HG03516__HG03516_HiFiEx_mix	HG03516	HG03516_HiFiEx_mix	m54329U_200612_200443.ccs.bam	29.3	10.5	prep from index
 HG03516__HG03516_HiFiEx_mix	HG03516	HG03516_HiFiEx_mix	m54329U_200614_021746.ccs.bam	19.4	6.7	prep from index

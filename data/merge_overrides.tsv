@@ -15,3 +15,5 @@ HG02145	depth	HG02145_Revio_validated=42.7	measured HLA depth of the validated r
 HG02109	depth	HG02109_Revio_validated=35.4	measured HLA depth of the validated run
 HG02055	depth	HG02055_Revio_validated=34.0	measured HLA depth of the validated run
 HG02723	depth	HG02723_Revio_validated=34.4	measured HLA depth of the validated run
+HG02080	depth	HG02080_ELF2_480c6e=36.1	measured HLA depth of the earlier run (not in HPRC index)
+HG03492	depth	HG03492_ELF2_ELF3_480c6f=37.0	measured HLA depth of the earlier run (not in HPRC index)
