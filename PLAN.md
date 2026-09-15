@@ -50,7 +50,7 @@ Merge and type (steps 4-5), after `git pull` on the cluster:
 
 ```bash
 P=/mnt/beegfs/cluster/scratch/mglasena; R=$P/hla-resolve-validation
-X=--exclude=node-29,node-31,node-33,node-34,node-35,node-36,node-37   # bad or slow nodes, see below
+X=--exclude=node-29,node-31,node-33,node-34,node-35,node-36,node-37,node-38,node-39,node-40,node-113,node-115   # bad, slow, or often-preempted nodes, see below
 N=$(tail -n +2 $R/data/merge_plan.tsv | cut -f1 | sort -u | wc -l)
 PLAN=$R/data/merge_plan.tsv MERGEDIR=$P/merged SEARCH_ROOTS="$P/pacbio_bam:/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam" \
   sbatch --array=1-$N $X --output=$P/logs/merge_%A_%a.out $R/scripts/pipeline/2_merge_plan.sbatch
@@ -61,7 +61,7 @@ PLAN=$R/data/merge_plan.tsv MERGEDIR=$P/merged RESULTS=$P/results \
 
 Use `/mnt/beegfs/...` paths in anything that runs on a node; `/hb/scratch` is a login-node symlink.
 
-Nodes to exclude on windfall: node-29, node-33, node-34, node-35, node-36 (Jeffrey's list); node-31, node-37 (S3 download at ~0.8 GB/min against ~4.7 GB/min elsewhere, 2026-09-14). Add to the list when a new slow node shows up.
+Nodes to exclude on windfall: node-29, node-33, node-34, node-35, node-36 (Jeffrey's list); node-31, node-37 (slow S3, 2026-09-14); node-38, node-39, node-40 (lab-colibri owners preempt windfall jobs often); node-113, node-115 (crashed mid-run 2026-09-14). Add to the list when a new one shows up.
 
 ## Doc layout (step 8)
 
