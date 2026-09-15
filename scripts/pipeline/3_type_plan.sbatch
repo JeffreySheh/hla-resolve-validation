@@ -3,9 +3,8 @@
 #SBATCH --partition=windfall
 #SBATCH --account=windfall
 #SBATCH --qos=windfall
-#SBATCH --cpus-per-task=12
+#SBATCH --cpus-per-task=24
 #SBATCH --mem=80G
-#SBATCH --time=12:00:00
 #SBATCH --no-requeue
 # STEP 3 (plan-driven): run hla_resolve on one merged entry.
 #

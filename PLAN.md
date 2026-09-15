@@ -56,7 +56,7 @@ PLAN=$R/data/merge_plan.tsv MERGEDIR=$P/merged SEARCH_ROOTS="$P/pacbio_bam:/mnt/
   sbatch --array=1-$N $X --output=$P/logs/merge_%A_%a.out $R/scripts/pipeline/2_merge_plan.sbatch
 # when all merges report ok:
 PLAN=$R/data/merge_plan.tsv MERGEDIR=$P/merged RESULTS=$P/results \
-  sbatch --array=1-$N $X --output=$P/logs/type_%A_%a.out $R/scripts/pipeline/3_type_plan.sbatch
+  sbatch --array=1-$N%15 $X --output=$P/logs/type_%A_%a.out $R/scripts/pipeline/3_type_plan.sbatch
 ```
 
 Use `/mnt/beegfs/...` paths in anything that runs on a node; `/hb/scratch` is a login-node symlink.
