@@ -1,31 +1,32 @@
-hla_resolve WGS validation: 79 entries graded from 1 audit file(s)
+hla_resolve WGS validation: 143 entries graded from 1 audit file(s)
+typed but not in the manifest (ignored): HG01258__HG01258.HFSS2
 
-== Lai truth: 37 entries, 32 samples ==
-call rate: 592/592 = 100.00% (0 gene x entry untyped)
+== Lai truth: 49 entries, 42 samples ==
+call rate: 784/784 = 100.00% (0 gene x entry untyped)
 concordance among called alleles:
                 A        B        C     DPA1     DPB1     DQA1     DQB1     DRB1               TOTAL
-     1f      74/74    74/74    74/74    74/74    74/74    74/74    74/74    72/73     590/591 = 99.83%
-     2f      74/74    74/74    74/74    74/74    74/74    74/74    74/74    71/73     589/591 = 99.66%
-     3f      71/73    70/70    74/74    74/74    73/73    74/74    72/72    69/71     577/581 = 99.31%
-     4f      68/72    53/69    67/74    70/73    69/72    64/74    69/72    62/66     522/572 = 91.26%
-mean HLA gene depth: mean 33.0x, median 34.4x, range 18.8-43.4x
+     1f      98/98    98/98    98/98    98/98    98/98    98/98    98/98    96/97     782/783 = 99.87%
+     2f      98/98    98/98    98/98    98/98    98/98    98/98    98/98    95/97     781/783 = 99.74%
+     3f      95/97    93/93    98/98    98/98    97/97    98/98    96/96    93/95     768/772 = 99.48%
+     4f      92/96    75/92    88/97    91/94    92/95    86/98    93/96    84/88     701/756 = 92.72%
+mean HLA gene depth: mean 34.7x, median 35.9x, range 22.4-46.8x
 
-== 1kGP truth: 42 entries, 39 samples ==
-call rate: 420/420 = 100.00% (0 gene x entry untyped)
+== 1kGP truth: 94 entries, 87 samples ==
+call rate: 940/940 = 100.00% (0 gene x entry untyped)
 concordance among called alleles:
                 A        B        C     DQB1     DRB1               TOTAL
-     1f      84/84    84/84    84/84    68/68    84/84     404/404 = 100.00%
-     2f      83/84    83/84    84/84    68/68    83/84     401/404 = 99.26%
+     1f    188/188  188/188  188/188  160/160  187/188     911/912 = 99.89%
+     2f    187/188  186/188  186/188  160/160  184/188     903/912 = 99.01%
 concordance, genes with ARS depth >= 10x only:
                 A        B        C     DQB1     DRB1               TOTAL
-     1f      84/84    84/84    84/84    68/68    84/84     404/404 = 100.00%
-     2f      83/84    83/84    84/84    68/68    83/84     401/404 = 99.26%
-mean HLA gene depth: mean 32.4x, median 33.4x, range 20.7-42.3x
+     1f    188/188  188/188  188/188  160/160  187/188     911/912 = 99.89%
+     2f    187/188  186/188  186/188  160/160  184/188     903/912 = 99.01%
+mean HLA gene depth: mean 32.4x, median 33.5x, range 19.6-44.0x
 
-== combined, 79 entries, HLA-A/-B/-C/-DQB1/-DRB1 at 1-2 fields ==
+== combined, 143 entries, HLA-A/-B/-C/-DQB1/-DRB1 at 1-2 fields ==
 concordance among called alleles:
                 A        B        C     DQB1     DRB1               TOTAL
-     1f    158/158  158/158  158/158  142/142  156/157     772/773 = 99.87%
-     2f    157/158  157/158  158/158  142/142  154/157     768/773 = 99.35%
+     1f    286/286  286/286  286/286  258/258  283/285   1399/1401 = 99.86%
+     2f    285/286  284/286  284/286  258/258  279/285   1390/1401 = 99.21%
 
-misses: 46 gene x entry -> results/misses.tsv
+misses: 57 gene x entry -> results/misses.tsv

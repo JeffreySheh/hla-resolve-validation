@@ -147,7 +147,10 @@ def main(paths):
     T.apply_exclusions(lai)
 
     os.makedirs(RESULTS, exist_ok=True)
-    entries = sorted(calls)
+    # only entries the manifest defines; a typed directory the plan later
+    # dropped (a thin library superseded by a deeper one) is left out
+    not_planned = sorted(e for e in calls if e not in meta)
+    entries = sorted(e for e in calls if e in meta)
     truth_of, graded, skipped = {}, {}, []
     for e in entries:
         s = T.key_sample(e)
@@ -165,7 +168,7 @@ def main(paths):
     cols = (["entry", "sample", "cohort", "library", "instrument", "truth", "n_files",
              "mean_gene_depth", "mean_ARS_depth", "min_ARS_depth"]
             + ["ARS_%s" % g for g in GENES]
-            + ["genes_typed", "alleles_called", "1f", "2f", "3f", "4f"]
+            + ["genes_typed", "alleles_called", "1f", "2f", "3f", "4f", "ABCDQB1DRB1_1f", "ABCDQB1DRB1_2f"]
             + ["HLA-%s_%d" % (g, i) for g in GENES for i in (1, 2)])
     with open(os.path.join(RESULTS, "calls.tsv"), "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")
@@ -182,6 +185,11 @@ def main(paths):
             for n in (1, 2, 3, 4):
                 h = sum(v[0] for (g, k), v in gr.items() if k == n)
                 dd = sum(v[1] for (g, k), v in gr.items() if k == n)
+                per_field.append(fmt(h, dd))
+            # the five genes both references cover, for the combined table
+            for n in (1, 2):
+                h = sum(gr.get((g, n), (0, 0))[0] for g in COMBINED_GENES)
+                dd = sum(gr.get((g, n), (0, 0))[1] for g in COMBINED_GENES)
                 per_field.append(fmt(h, dd))
             w.writerow([e, T.key_sample(e), m.get("cohort", ""), m.get("library", ""), m.get("instrument", ""),
                         name, len(m.get("files", [])),
@@ -222,6 +230,8 @@ def main(paths):
     out.append("hla_resolve WGS validation: %d entries graded from %d audit file(s)" % (len(graded), len(paths)))
     if skipped:
         out.append("no reference typing for %d entries (not graded): %s" % (len(skipped), " ".join(skipped)))
+    if not_planned:
+        out.append("typed but not in the manifest (ignored): %s" % " ".join(not_planned))
     for name in ("Lai", "1kGP"):
         es = [e for e in entries if truth_of.get(e, ("",))[0] == name]
         if not es:
