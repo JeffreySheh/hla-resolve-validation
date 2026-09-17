@@ -209,7 +209,6 @@ TRUTHS = {
     "Lai": {"genes": GENES, "depths": [1, 2, 3, 4]},
     "1kGP": {"genes": ["A", "B", "C", "DQB1", "DRB1"], "depths": [1, 2]},
 }
-COMBINED_GENES = ["A", "B", "C", "DQB1", "DRB1"]
 GATE_DEPTH = 10.0      # per-gene ARS depth for the gated table
 DROPOUT_DEPTH = 20.0   # a miss at a gene below this is flagged as likely allelic dropout
 
@@ -422,9 +421,11 @@ def main(paths):
                 sum(deps) / len(deps), deps[len(deps) // 2], deps[0], deps[-1]))
     es = [e for e in entries if e in graded]
     out.append("")
-    out.append("== combined, %d entries, HLA-A/-B/-C/-DQB1/-DRB1 at 1-2 fields ==" % len(es))
-    cell = lambda g, n, es=es: (sum(graded[e][(g, n)][0] for e in es), sum(graded[e][(g, n)][1] for e in es))
-    out.append(table("concordance among called alleles:", COMBINED_GENES, [1, 2], cell))
+    out.append("== both references pooled, %d input BAMs ==" % len(es))
+    for n in (1, 2, 3, 4):
+        h = sum(v[0] for e in es for (g, k), v in graded[e].items() if k == n)
+        d = sum(v[1] for e in es for (g, k), v in graded[e].items() if k == n)
+        out.append("  %df  %s = %s" % (n, fmt(h, d), pct(h, d).strip()))
     out.append("")
     out.append("misses: %d gene x input BAM -> results/misses.tsv" % n_miss)
     text = "\n".join(out) + "\n"
