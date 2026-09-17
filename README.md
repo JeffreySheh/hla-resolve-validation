@@ -40,10 +40,10 @@ Concordance is reported among alleles called. An allele was evaluated at a given
 
 ```
 data/
-  manifest.tsv                     every input file per input BAM: sample, cohort, library, instrument, filename, S3/HTTPS URI, bytes, index coverage
-  merge_plan.tsv                   select_inputs.py output the manifest was built from
+  manifest.tsv                     sequencing read file manifest
+  merge_plan.tsv                   assigns each read file to a final input BAM for HLA typing
   merge_overrides.tsv              metadata corrections used by select_inputs.py
-  library_by_file.tsv              BAM header scan (LB/PU/SM) of every downloaded file, input to select_inputs.py
+  library_by_file.tsv              library and sample tags parsed from every downloaded BAM header
   samples_all.txt                  the 129 HPRC-sequenced samples
   HPRC_PacBio_HiFi.file.index.csv  HPRC metadata snapshot used for library and coverage
   s3_listing.tsv                   cached bucket listing behind manifest.tsv
@@ -70,7 +70,7 @@ archive/                           the original pipeline and its results
 Start from `data/manifest.tsv`. It was made by downloading a larger set of files per sample and applying the selection rules with `scripts/select_inputs.py`; the selection is already done, so reproducing the results starts with the download.
 
 1. **Download read files.** `scripts/pipeline/1_download.sbatch` downloads the files in `data/manifest.tsv`.
-2. **Merge SMRT cells.** `scripts/pipeline/2_merge.sbatch` combines read files from the same library sequenced across different SMRT cells when needed to reach ~30× genome-wide coverage depth.
+2. **Merge SMRT cells.** `scripts/pipeline/2_merge.sbatch` concatenates read files from the same library sequenced across different SMRT cells when needed to reach ~30× genome-wide coverage depth. The files to be concatenated are specified by `data/merge_plan.tsv`, which was created during input selection (see above).
 3. **Perform HLA typing.** `scripts/pipeline/3_type.sbatch` runs HLA-Resolve on each finalized BAM.
 4. **Collect results.** `scripts/pipeline/4_audit_results.py` gathers the allele calls and coverage from every run into one file, `results/audit.txt`.
 5. **Evaluate HLA allele concordance.** `scripts/pipeline/5_test_against_truth.py` compares the HLA allele calls from HLA-Resolve to the reference typings and writes `results/calls.tsv`, `results/misses.tsv`, and `results/summary.txt`.
