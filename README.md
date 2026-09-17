@@ -69,55 +69,13 @@ archive/                           the original pipeline and its results (see Hi
 
 ## Workflow
 
-Steps in order. Steps 1–2 were run once and their outputs are committed; a re-run starts at step 3 from the committed manifest.
+Steps 1 and 2 were run once; their outputs are committed. A re-run starts at step 3 from the committed manifest.
 
-| # | Step | Script | Reads | Writes |
-|---|------|--------|-------|--------|
-| 1 | Select inputs by the rules above | `select_inputs.py data/samples_all.txt` | `data/library_by_file.tsv` (BAM header scan), `data/HPRC_PacBio_HiFi.file.index.csv`, `data/merge_overrides.tsv` | `data/merge_plan.tsv` (entry, sample, library, filename, size, depth, note) |
-| 2 | Record the S3 object behind every planned file | `build_manifest.py` | `data/merge_plan.tsv`, HPRC bucket listing (cached in `data/s3_listing.tsv`) | `data/manifest.tsv` |
-| 3 | Download | `pipeline/1_download.sbatch` + `fetch_worker.sh`, one array task per sample | a 4-column cut of `data/manifest.tsv` (sample, filename, URI, bytes) | `<scratch>/pacbio_bam/<sample>/<file>` with a `.done` marker per verified file |
-| 4 | Merge | `pipeline/2_merge.sbatch`, one array task per entry | a frozen copy of `data/merge_plan.tsv`, the downloaded files | `<scratch>/merged/<entry>.hifi.bam` (+ `.done`); a single-file entry is a symlink |
-| 5 | Type | `pipeline/3_type.sbatch`, one array task per entry | the merged BAMs | `<scratch>/results/<entry>/<sample>/hla_typing_results/allele_output.csv`, run log `<entry>/<sample>.hla_resolve.log` |
-| 6 | Audit | `audit_results.py <results root>` | the results tree | `results/audit.txt` (allele calls, coverage summary, per-gene ARS depth, notes) |
-| 7 | Grade | `grade.py results/audit.txt` | `results/audit.txt`, `data/manifest.tsv`, the two answer keys | `results/calls.tsv`, `results/misses.tsv`, `results/summary.txt` |
-| 8 | Document | `build_doc.py` | `results/calls.tsv`, `results/misses.tsv`, `data/manifest.tsv` | `docs/wgs_validation.md` in the HLA-Resolve repository |
-
-Commands as run on the UCSC cluster (`$P` scratch, `$R` this repository):
-
-```bash
-P=/mnt/beegfs/cluster/scratch/<user>; R=$P/hla-resolve-validation
-X=--exclude=node-29,node-31,node-33,node-34,node-35,node-36,node-37,node-38,node-39,node-40,node-113,node-115   # windfall nodes that are slow or often preempted
-
-# 3. download (the two GIAB HG002 files are HTTPS: wget -c <url>, then touch .<file>.done beside it)
-awk -F'\t' 'NR>1 && $7 ~ /^s3:/ {print $2"\t"$6"\t"$7"\t"$8}' $R/data/manifest.tsv > $P/pacbio_bam/pacbio_manifest.tsv
-N=$(cut -f1 $P/pacbio_bam/pacbio_manifest.tsv | sort -u | wc -l)
-OUTDIR=$P/pacbio_bam WORKER=$R/scripts/pipeline/fetch_worker.sh sbatch --array=1-$N $X $R/scripts/pipeline/1_download.sbatch
-
-# 4. merge; PLAN is a frozen copy because a task maps its array index to the Nth entry of PLAN when it starts
-cp $R/data/merge_plan.tsv $P/plan.tsv; PLAN=$P/plan.tsv
-N=$(tail -n +2 $PLAN | cut -f1 | sort -u | wc -l)
-MERGEDIR=$P/merged SEARCH_ROOTS="$P/pacbio_bam" sbatch --array=1-$N%40 $X $R/scripts/pipeline/2_merge.sbatch
-
-# 5. type (conda env with hla_resolve active; 24 CPU, ~3 h and ~27 GB peak per entry)
-MERGEDIR=$P/merged RESULTS=$P/results sbatch --array=1-$N%10 $X $R/scripts/pipeline/3_type.sbatch
-
-# 6-8. audit, grade, document
-python3 $R/scripts/audit_results.py $P/results > $R/results/audit.txt
-python3 $R/scripts/grade.py $R/results/audit.txt
-python3 $R/scripts/build_doc.py
-```
-
-Notes from the run: the shared filesystem, not CPU, sets the pace (about 0.5 GB/s in total; merging 9 TB took ~8 h at 40 concurrent streams, typing ~3 h per entry at 10–20 concurrent). Windfall jobs get preempted and the array scripts use `--no-requeue`, so a failed task is resubmitted by index. A typing task that dies at import (NFS hiccup on the conda env) retries itself.
-
-## History
-
-The first version of this pipeline (Jeffrey Sheh, 2026; kept under `archive/`) downloaded every BAM per sample, merged the Revio cells if there were at least three and the Sequel II cells otherwise, typed each sample once, and graded against Lai (40 samples) and the 1000 Genomes panel (89 samples). An audit of the BAM headers found the reasons for the re-run:
-
-- the merge rule keyed on the movie-name prefix and skipped `m54*` Sequel IIe cells (16 samples affected; one sample typed from 28,786 reads);
-- it had no notion of library: five samples merged two or three library preparations, one of them Fiber-seq;
-- barcode cross-talk stubs (sub-GB files carrying another sample's reads) entered merges;
-- for 13 samples the Sequel IIe cells were in an S3 subfolder a non-recursive listing never showed, so they ran from one thin Revio cell (6–22×);
-- ten HPRC samples ran at over 40× from four merged cells;
-- the 1000 Genomes grader counted no-calls as misses, dropped `*`-flagged alleles, and paired alleles greedily.
-
-The download step and worker are unchanged from that version and were used for the re-run. The merge and typing scripts were replaced by plan-driven versions, the grader by `grade.py`, and the sample-level results by library-level ones.
+1. **Select inputs.** `select_inputs.py` applies the rules above to the header scan of every downloaded BAM (`data/library_by_file.tsv`) and the HPRC file index, and writes `data/merge_plan.tsv`: one row per input file, grouped into entries.
+2. **Build the manifest.** `build_manifest.py` looks up the S3 object behind each planned file and writes `data/manifest.tsv`, the fixed list of inputs with cohort, library, instrument, URI, and size.
+3. **Download.** `1_download.sbatch` fetches the manifest's files, one array task per sample, and leaves a `.done` marker next to each verified file.
+4. **Merge.** `2_merge.sbatch` concatenates each entry's files with `samtools cat` into one unaligned BAM (`merged/<entry>.hifi.bam`). An entry with a single file is symlinked.
+5. **Type.** `3_type.sbatch` runs HLA-Resolve on each merged BAM. Results land in `results/<entry>/<sample>/hla_typing_results/`, with the run log beside them.
+6. **Audit.** `audit_results.py` reads every result directory and writes one file, `results/audit.txt`, with the allele calls, coverage summary, and per-gene ARS depth.
+7. **Grade.** `grade.py` scores the audit against both reference sets and writes `results/calls.tsv` (one row per entry), `results/misses.tsv`, and `results/summary.txt`.
+8. **Document.** `build_doc.py` turns the graded results into `docs/wgs_validation.md` in the HLA-Resolve repository.
