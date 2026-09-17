@@ -18,7 +18,7 @@ Inputs were chosen by `scripts/select_inputs.py` from the HPRC PacBio HiFi data 
 - Duplicate encodings of the same cell (`.5mc`, `.fixed_kinetics`, `.pm_v1.4.0` copies).
 - Libraries below 20× when the same sample has a deeper library. A sample whose only library is below 20× was still typed.
 
-Metadata corrections are listed in `data/merge_overrides.tsv`.
+A few HPRC metadata entries are wrong or missing (e.g. NA19909's four preps are all labelled as one library). `data/merge_overrides.tsv` lists these hand fixes, with a note on each.
 
 ## Scoring
 
