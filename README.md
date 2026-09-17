@@ -55,27 +55,22 @@ scripts/
   pipeline/1_download.sbatch, fetch_worker.sh   download from a manifest (verified, resumable)
   pipeline/2_merge.sbatch          samtools cat per entry, from a plan
   pipeline/3_type.sbatch           hla_resolve per entry
-  audit_results.py                 results tree -> one audit file (calls, coverage, per-gene ARS depth)
-  grade.py                         audit -> results/ (both references); imports test_against_truth.py
-  test_against_truth.py            grading functions
-  build_doc.py                     results -> docs/wgs_validation.md in the hla_resolve repository
+  audit_results.py                 results tree -> results/audit.txt
+  test_against_truth.py            results/audit.txt -> results/ (both references)
 results/
   audit.txt                        raw audit of the typing run
   calls.tsv                        one row per entry: metadata, depth, per-gene ARS depth, call rate, concordance by field, alleles
   misses.tsv                       every discordant gene x entry
   summary.txt                      call rate and concordance tables
-archive/                           the original pipeline and its results (see History)
+archive/                           the original pipeline and its results
 ```
 
 ## Workflow
 
-Steps 1 and 2 were run once; their outputs are committed. A re-run starts at step 3 from the committed manifest.
+Start from `data/manifest.tsv`. It was made by downloading a larger set of files per sample and applying the selection rules with `scripts/select_inputs.py`; the selection is already done, so reproducing the results starts with the download.
 
-1. **Select inputs.** `select_inputs.py` applies the rules above to the header scan of every downloaded BAM (`data/library_by_file.tsv`) and the HPRC file index, and writes `data/merge_plan.tsv`: one row per input file, grouped into entries.
-2. **Build the manifest.** `build_manifest.py` looks up the S3 object behind each planned file and writes `data/manifest.tsv`, the fixed list of inputs with cohort, library, instrument, URI, and size.
-3. **Download.** `1_download.sbatch` fetches the manifest's files, one array task per sample, and leaves a `.done` marker next to each verified file.
-4. **Merge.** `2_merge.sbatch` concatenates each entry's files with `samtools cat` into one unaligned BAM (`merged/<entry>.hifi.bam`). An entry with a single file is symlinked.
-5. **Type.** `3_type.sbatch` runs HLA-Resolve on each merged BAM. Results land in `results/<entry>/<sample>/hla_typing_results/`, with the run log beside them.
-6. **Audit.** `audit_results.py` reads every result directory and writes one file, `results/audit.txt`, with the allele calls, coverage summary, and per-gene ARS depth.
-7. **Grade.** `grade.py` scores the audit against both reference sets and writes `results/calls.tsv` (one row per entry), `results/misses.tsv`, and `results/summary.txt`.
-8. **Document.** `build_doc.py` turns the graded results into `docs/wgs_validation.md` in the HLA-Resolve repository.
+1. **Download read files.** `scripts/pipeline/1_download.sbatch` downloads the files in `data/manifest.tsv`.
+2. **Merge SMRT cells.** `scripts/pipeline/2_merge.sbatch` combines read files from the same library sequenced across different SMRT cells when needed to reach ~30× genome-wide coverage depth.
+3. **Perform HLA typing.** `scripts/pipeline/3_type.sbatch` runs HLA-Resolve on each finalized BAM.
+4. **Collect results.** `scripts/audit_results.py` gathers the allele calls and coverage from every run into one file, `results/audit.txt`.
+5. **Evaluate HLA allele concordance.** `scripts/test_against_truth.py` compares the HLA allele calls from HLA-Resolve to the reference typings and writes `results/calls.tsv`, `results/misses.tsv`, and `results/summary.txt`.

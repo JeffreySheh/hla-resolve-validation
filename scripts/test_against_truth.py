@@ -1,33 +1,32 @@
 #!/usr/bin/env python3
-"""
-Grading functions for HLA allele calls against a reference key.
+"""Grade HLA-Resolve calls against the reference typings, both references at once.
 
-Imported by scripts/grade.py, which grades every entry against both reference
-sets (Lai et al. and the 1000 Genomes panel) and writes results/. The
-standalone entry point below is retired; run
+    python3 scripts/test_against_truth.py results/audit.txt [more audit files...]
 
-    python3 scripts/grade.py results/audit.txt
+An entry is one sample x one library (<sample>__<library>); its calls come from
+the audit written by audit_results.py. The reference for an entry is chosen by
+sample: the Lai et al. key (eight genes, up to four fields) when the sample is
+in it, otherwise the 1000 Genomes panel (HLA-A, -B, -C, -DQB1, -DRB1, two
+fields).
 
-Matching semantics (zero-padded field comparison, unordered allele pairing, no
-test-allele reuse) are defined here and documented below.
+Reads   data/manifest.tsv           entry -> sample, cohort, library, instrument
+        data/lai_answer_key.tsv     Lai et al. reference typings
+        data/kgp_answer_key.tsv     1000 Genomes panel, converted
+        data/kgp_star_alleles.tsv   panel alleles flagged exome-only
+Writes  results/calls.tsv           one row per entry: metadata, depth, call
+                                    rate, concordance at each field, alleles
+        results/misses.tsv          every discordant gene x entry with depth
+        results/summary.txt         call rate and concordance tables per
+                                    reference, a combined table, and a
+                                    depth-gated table
 
-Prints call rate and concordance by gene at 1-4 field resolution. Writes every
-discordant gene x sample to results/hla_resolve_misses.txt and a tab-delimited
-per-sample breakdown to results/concordance_by_sample.txt.
 
-
-EXCLUSIONS
-----------
-Exactly one allele is excluded from grading:
-
-    HG01358  HLA-DRB1  DRB1*04:92#
-
-The trailing "#" is not IMGT/HLA nomenclature -- it is the Lai key's own
-uncertainty flag, so the entry cannot be graded as a definite allele. Nothing
-else is excluded. A full scan of both the key and the call set found no other
-non-standard designations, and the scan re-runs on every invocation so a future
-key revision cannot slip one in unnoticed. Legal IMGT expression suffixes ARE
-retained and graded normally (DPA1*03:05:01:02Q, C*06:02:01:116Q).
+MATCHING
+--------
+Alleles are compared field by field with zero padding (A*2:1 == A*02:01).
+Pairing is unordered: every assignment of calls to reference alleles is tried
+and the best-scoring one wins, so no call is credited against both reference
+alleles. A reference ambiguity string (A*03:01/A*03:04) matches either option.
 
 
 DENOMINATOR HANDLING
@@ -77,27 +76,15 @@ from collections import defaultdict
 from itertools import permutations
 
 GENES = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
-DEPTHS = [1, 2, 3, 4]
 
-# (sample, gene, allele) triples dropped before grading. See EXCLUSIONS above.
+# (sample, gene, allele) triples dropped before grading: the Lai key marks one
+# uncertain call with a trailing "#", which is not an IPD-IMGT/HLA designation.
 EXCLUDED_ALLELES = {
     ("HG01358", "DRB1", "DRB1*04:92#"),
 }
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KEY_PATH = os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")
-CALLS_PATH = os.path.join(REPO_ROOT, "data", "hprc_calls.csv")
-MISSES_PATH = os.path.join(REPO_ROOT, "results", "hla_resolve_misses.txt")
-PER_SAMPLE_PATH = os.path.join(REPO_ROOT, "results", "concordance_by_sample.txt")
-
 NO_CALL_PAT = re.compile(r"(?:^|\b)(?:no\s*call|na|none)$", re.IGNORECASE)
-# GENE*NN[:NN...] with an optional IMGT expression suffix (N/L/S/C/A/Q).
-IMGT_PAT = re.compile(r"^[A-Z0-9]+\*\d{2,}(:\d{2,})*[NLSCAQ]?$")
 
-
-# --------------------------------------------------------------------------
-# allele handling
-# --------------------------------------------------------------------------
 
 def is_called(allele):
     """True if the string is an actual allele designation rather than a blank
@@ -133,10 +120,6 @@ def truncate(allele, n):
         padded.append("%02d%s" % (int(m.group(1)), m.group(2)) if m else f)
     return "%s*%s" % (head, ":".join(padded))
 
-
-# --------------------------------------------------------------------------
-# grading
-# --------------------------------------------------------------------------
 
 def grade_gene(truth_alleles, call_alleles, n):
     """Grade one gene at n-field resolution.
@@ -182,10 +165,6 @@ def grade_gene(truth_alleles, call_alleles, n):
     return best, len(gradable)
 
 
-# --------------------------------------------------------------------------
-# input
-# --------------------------------------------------------------------------
-
 def load_key(path):
     """Headerless TSV: sample, then two alleles per gene in GENES order."""
     key = {}
@@ -204,21 +183,6 @@ def key_sample(entry):
     return entry.split("__", 1)[0]
 
 
-def load_calls(path):
-    """Results CSV. Rows without a coverage value are separators, not data."""
-    calls, coverage = {}, {}
-    with open(path, newline="") as fh:
-        for row in csv.DictReader(fh):
-            sample = row["sample"].strip()
-            depth = row.get("HLA_coverage_x", "").strip()
-            if not depth:
-                continue
-            calls[sample] = {g: [row["HLA-%s_1" % g].strip(),
-                                 row["HLA-%s_2" % g].strip()] for g in GENES}
-            coverage[sample] = depth
-    return calls, coverage
-
-
 def apply_exclusions(key):
     dropped = []
     for sample, gene, allele in sorted(EXCLUDED_ALLELES):
@@ -234,228 +198,246 @@ def apply_exclusions(key):
     return dropped
 
 
-def scan_nonstandard(key, calls):
-    """Any designation outside IMGT nomenclature still present after
-    exclusions -- a guard against a new key revision slipping one in."""
-    found = []
-    for label, src in (("truth", key), ("call", calls)):
-        for sample in sorted(src):
-            for gene in GENES:
-                for allele in src[sample][gene]:
-                    if not is_called(allele):
-                        continue
-                    # an ambiguity string is fine if every option is IMGT
-                    if any(not IMGT_PAT.match(normalise(o))
-                           for o in split_options(allele)):
-                        found.append((label, sample, gene, allele))
-    return found
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MANIFEST = os.path.join(REPO_ROOT, "data", "manifest.tsv")
+LAI_KEY = os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")
+KGP_KEY = os.path.join(REPO_ROOT, "data", "kgp_answer_key.tsv")
+KGP_STAR = os.path.join(REPO_ROOT, "data", "kgp_star_alleles.tsv")
+RESULTS = os.path.join(REPO_ROOT, "results")
+
+TRUTHS = {
+    "Lai": {"genes": GENES, "depths": [1, 2, 3, 4]},
+    "1kGP": {"genes": ["A", "B", "C", "DQB1", "DRB1"], "depths": [1, 2]},
+}
+COMBINED_GENES = ["A", "B", "C", "DQB1", "DRB1"]
+GATE_DEPTH = 10.0      # per-gene ARS depth for the gated table
+DROPOUT_DEPTH = 20.0   # a miss at a gene below this is flagged as likely allelic dropout
 
 
 # --------------------------------------------------------------------------
-# call rate -- never consults the key
+# input
 # --------------------------------------------------------------------------
 
-def call_rate(calls):
-    """(alleles_called, alleles_expected, untyped gene x sample combos).
-
-    Counts every sample hla_resolve was run on. Two alleles are expected per
-    gene per sample; anything not emitted counts against the rate.
-    """
-    untyped = []
-    called = 0
-    for sample in sorted(calls):
-        for gene in GENES:
-            n = sum(1 for a in calls[sample][gene] if is_called(a))
-            called += n
-            if n < 2:
-                untyped.append((sample, gene, n))
-    expected = len(calls) * len(GENES) * 2
-    return called, expected, untyped
+def read_block(path, name):
+    rows, inside = [], False
+    for line in open(path):
+        line = line.rstrip("\n")
+        if line == "=== %s ===" % name:
+            inside = True
+            continue
+        if line == "=== END %s ===" % name:
+            break
+        if inside and line and not line.startswith("#"):
+            rows.append(line.split("\t"))
+    header, body = rows[0], rows[1:]
+    return [dict(zip(header, r)) for r in body]
 
 
-# --------------------------------------------------------------------------
-# self-check on the grading rules
-# --------------------------------------------------------------------------
+def load_audits(paths):
+    """calls[entry][gene] = [a1, a2]; depth[entry] = coverage row; ars[entry][gene] = float."""
+    calls, depth, ars = {}, {}, {}
+    for p in paths:
+        for r in read_block(p, "BLOCK1 ALLELE CALLS"):
+            e = r["sample"]
+            row = {g: [r["HLA-%s_1" % g], r["HLA-%s_2" % g]] for g in GENES}
+            if not any(is_called(a) for g in GENES for a in row[g]):
+                continue  # entry still running: audit found the directory but no calls
+            calls[e] = row
+        for r in read_block(p, "BLOCK2 COVERAGE SUMMARY"):
+            depth[r["sample"]] = r
+        for r in read_block(p, "BLOCK3 PER-GENE ARS DEPTH"):
+            ars[r["sample"]] = {g: float(r[g]) if r.get(g, "") not in ("", "NA") else None for g in GENES}
+    return calls, depth, ars
 
-def selftest():
-    cases = [
-        (["A*02:01:01", "A*02:01:01"], ["A*02:01:01:01", "A*02:01:01:01"], 4, 0, 0,
-         "truth shallower than n: not evaluated"),
-        (["A*02:01:01", "A*02:01:01"], ["A*02:01:01:01", "A*02:01:01:01"], 3, 2, 2,
-         "same pair at the truth's own depth: hit"),
-        (["A*02:01:01:01", "A*02:01:01:01"], ["A*02:01:01", "A*02:01:01"], 4, 0, 2,
-         "call shallower than n: counted and scored as a miss"),
-        (["A*02:01:01:01", "A*02:01:01:01"], ["A*02:01:01", "A*02:01:01"], 3, 2, 2,
-         "same pair at 3 fields: hit"),
-        (["A*01:01:01:01", "A*02:01:01:01"], ["A*02:01:01:01", "A*01:01:01:01"], 4, 2, 2,
-         "pairing is unordered"),
-        (["A*01:01:01:01", "A*01:01:01:01"], ["A*01:01:01:01", "A*02:01:01:01"], 4, 1, 2,
-         "one call cannot be credited against both truth alleles"),
-        (["A*01:01:01:01", "A*02:01:01:01"], ["", ""], 4, 0, 0,
-         "no-call gene: excluded from concordance, counted in call rate"),
-        (["DPA1*03:05:01:02Q"], ["DPA1*03:05:01:02Q"], 4, 1, 1,
-         "IMGT expression suffixes are graded, not stripped"),
-        (["A*2:1:1:1", "A*02:01:01:01"], ["A*02:01:01:01", "A*02:01:01:01"], 4, 2, 2,
-         "numeric fields are zero-padded before comparison"),
-    ]
-    failed = []
-    for truth, call, n, want_h, want_d, why in cases:
-        got = grade_gene(truth, call, n)
-        if got != (want_h, want_d):
-            failed.append("%df %s vs %s -> %d/%d, expected %d/%d  (%s)"
-                          % (n, truth, call, got[0], got[1], want_h, want_d, why))
-    if failed:
-        print("GRADING SELF-CHECK FAILED -- refusing to report numbers:")
-        for f in failed:
-            print("  " + f)
-        sys.exit(1)
+
+def load_manifest():
+    meta = {}
+    for r in csv.DictReader(open(MANIFEST), delimiter="\t"):
+        m = meta.setdefault(r["entry"], {"sample": r["sample"], "cohort": r["cohort"],
+                                          "library": r["library"], "instrument": r["instrument"],
+                                          "files": []})
+        m["files"].append(r["filename"])
+    return meta
+
+
+def load_star():
+    star = set()
+    if os.path.exists(KGP_STAR):
+        for r in csv.DictReader(open(KGP_STAR), delimiter="\t"):
+            star.add((r["sample"], r["gene"]))
+    return star
 
 
 # --------------------------------------------------------------------------
-# main
+# grading
 # --------------------------------------------------------------------------
 
-def write_misses(key, calls, graded):
-    """Write every discordant gene x sample to MISSES_PATH. Returns the count.
-
-    A row shows hits/denominator at each depth, so a miss that only appears at
-    four fields is distinguishable at a glance from one that is already wrong
-    at one or two. "deepest field only" means the call is correct through
-    three fields and differs solely at the fourth.
-    """
-    rows = []
-    for sample in graded:
-        for gene in GENES:
-            scores = {n: grade_gene(key[key_sample(sample)][gene], calls[sample][gene], n)
-                      for n in DEPTHS}
-            if not any(d and h < d for h, d in scores.values()):
-                continue
-            worst = min(n for n in DEPTHS
-                        if scores[n][1] and scores[n][0] < scores[n][1])
-            tag = ("deepest field only" if worst == max(DEPTHS)
-                   else "discordant from %df" % worst)
-            rows.append((sample, gene, scores, tag))
-
-    with open(MISSES_PATH, "w") as fh:
-        fh.write("hla_resolve misses against %s\n" % os.path.basename(KEY_PATH))
-        fh.write("Generated by scripts/test_against_truth.py -- do not edit by hand.\n\n")
-        fh.write("Every gene x sample discordant at any field depth, across all\n")
-        fh.write("%d samples. Each row gives hits/denominator at %d-%d fields; a\n"
-                 % (len(graded), min(DEPTHS), max(DEPTHS)))
-        fh.write("denominator below 2 means the reference does not resolve that\n")
-        fh.write("allele deeply enough to test at that depth. Genes hla_resolve\n")
-        fh.write("did not call are absent here -- they are call-rate failures,\n")
-        fh.write("not discordances.\n\n")
-        fh.write("%d discordant gene x sample combos\n" % len(rows))
-        fh.write("=" * 72 + "\n")
-        for sample, gene, scores, tag in rows:
-            detail = "  ".join("%df %d/%d" % (n, scores[n][0], scores[n][1])
-                               for n in DEPTHS)
-            fh.write("\n%-8s %-5s %s   [%s]\n" % (sample, gene, detail, tag))
-            fh.write("         call  %s\n" % " / ".join(calls[sample][gene]))
-            fh.write("         truth %s\n" % " / ".join(key[key_sample(sample)][gene]))
-        if not rows:
-            fh.write("\nnone\n")
-    return len(rows)
+def grade_entry(truth_row, call_row, genes, depths):
+    """{(gene, n): (hits, denom)}"""
+    out = {}
+    for g in genes:
+        for n in depths:
+            out[(g, n)] = grade_gene(truth_row[g], call_row[g], n)
+    return out
 
 
-def write_per_sample(key, calls, coverage, graded):
-    """One row per sample: coverage, how much was typed, and the concordance
-    fraction at each field depth.
+def fmt(h, d):
+    return "%d/%d" % (h, d) if d else ""
 
-    Each depth column is hits/denominator. The denominator is per-sample and
-    can differ between depths -- it counts only truth alleles the reference
-    resolves that deeply, against genes hla_resolve actually called -- so
-    fractions are given rather than bare counts.
 
-    Tab-delimited and named .txt so Excel offers the Text Import Wizard. Set
-    the fraction columns to Text at step 3 of that wizard. Excel's default
-    import reads anything shaped like 4/6 as a date and silently rewrites the
-    cell -- 6/16 becomes 16-Jun -- so a plain double-click will corrupt this
-    file unless the legacy wizard is enabled.
-    """
-    with open(PER_SAMPLE_PATH, "w", newline="") as fh:
+def pct(h, d):
+    return "%6.2f%%" % (100.0 * h / d) if d else "     --"
+
+
+def table(title, genes, depths, cell):
+    """cell(gene, n) -> (hits, denom). Returns the printed block as a string."""
+    lines = [title, "  %6s" % "" + "".join("%9s" % g for g in genes) + "%20s" % "TOTAL"]
+    for n in depths:
+        h_t = d_t = 0
+        row = "  %4df  " % n
+        for g in genes:
+            h, d = cell(g, n)
+            h_t += h
+            d_t += d
+            row += "%9s" % fmt(h, d)
+        row += "%12s = %s" % (fmt(h_t, d_t), pct(h_t, d_t).strip())
+        lines.append(row)
+    return "\n".join(lines)
+
+
+def main(paths):
+    calls, depth, ars = load_audits(paths)
+    meta = load_manifest()
+    lai = load_key(LAI_KEY)
+    kgp = load_key(KGP_KEY)
+    star = load_star()
+    apply_exclusions(lai)
+
+    os.makedirs(RESULTS, exist_ok=True)
+    # only entries the manifest defines; a typed directory the plan later
+    # dropped (a thin library superseded by a deeper one) is left out
+    not_planned = sorted(e for e in calls if e not in meta)
+    entries = sorted(e for e in calls if e in meta)
+    truth_of, graded, skipped = {}, {}, []
+    for e in entries:
+        s = key_sample(e)
+        if s in lai:
+            truth_of[e] = ("Lai", lai[s])
+        elif s in kgp:
+            truth_of[e] = ("1kGP", kgp[s])
+        else:
+            skipped.append(e)
+            continue
+        name, key = truth_of[e]
+        graded[e] = grade_entry(key, calls[e], TRUTHS[name]["genes"], TRUTHS[name]["depths"])
+
+    # ---- calls.tsv --------------------------------------------------------
+    cols = (["entry", "sample", "cohort", "library", "instrument", "truth", "n_files",
+             "mean_gene_depth", "mean_ARS_depth", "min_ARS_depth"]
+            + ["ARS_%s" % g for g in GENES]
+            + ["genes_typed", "alleles_called", "1f", "2f", "3f", "4f", "ABCDQB1DRB1_1f", "ABCDQB1DRB1_2f"]
+            + ["HLA-%s_%d" % (g, i) for g in GENES for i in (1, 2)])
+    with open(os.path.join(RESULTS, "calls.tsv"), "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")
-        w.writerow(["sample", "HLA_coverage_x", "genes_typed", "alleles_called"]
-                   + ["%df" % n for n in DEPTHS])
-        for sample in graded:
-            typed = sum(1 for g in GENES
-                        if any(is_called(a) for a in calls[sample][g]))
-            n_alleles = sum(1 for g in GENES for a in calls[sample][g]
-                            if is_called(a))
-            row = [sample, coverage[sample], "%d/%d" % (typed, len(GENES)),
-                   "%d/%d" % (n_alleles, len(GENES) * 2)]
-            for n in DEPTHS:
-                hits = denom = 0
-                for gene in GENES:
-                    h, d = grade_gene(key[key_sample(sample)][gene], calls[sample][gene], n)
-                    hits += h
-                    denom += d
-                row.append("%d/%d" % (hits, denom))
-            w.writerow(row)
+        w.writerow(cols)
+        for e in entries:
+            m = meta.get(e, {})
+            name = truth_of.get(e, ("", None))[0]
+            d = depth.get(e, {})
+            a = ars.get(e, {})
+            typed = sum(1 for g in GENES if any(is_called(x) for x in calls[e][g]))
+            called = sum(1 for g in GENES for x in calls[e][g] if is_called(x))
+            gr = graded.get(e, {})
+            per_field = []
+            for n in (1, 2, 3, 4):
+                h = sum(v[0] for (g, k), v in gr.items() if k == n)
+                dd = sum(v[1] for (g, k), v in gr.items() if k == n)
+                per_field.append(fmt(h, dd))
+            # the five genes both references cover, for the combined table
+            for n in (1, 2):
+                h = sum(gr.get((g, n), (0, 0))[0] for g in COMBINED_GENES)
+                dd = sum(gr.get((g, n), (0, 0))[1] for g in COMBINED_GENES)
+                per_field.append(fmt(h, dd))
+            w.writerow([e, key_sample(e), m.get("cohort", ""), m.get("library", ""), m.get("instrument", ""),
+                        name, len(m.get("files", [])),
+                        d.get("mean_gene_depth", ""), d.get("mean_ARS_depth", ""), d.get("min_ARS_depth", ""),
+                        *["%.1f" % a[g] if a.get(g) is not None else "" for g in GENES],
+                        "%d/8" % typed, "%d/16" % called, *per_field,
+                        *[calls[e][g][i] for g in GENES for i in (0, 1)]])
 
+    # ---- misses.tsv -------------------------------------------------------
+    n_miss = 0
+    with open(os.path.join(RESULTS, "misses.tsv"), "w", newline="") as fh:
+        w = csv.writer(fh, delimiter="\t")
+        w.writerow(["entry", "sample", "truth", "gene", "field", "hits", "denom", "ARS_depth",
+                    "call_1", "call_2", "truth_1", "truth_2", "note"])
+        for e in entries:
+            if e not in graded:
+                continue
+            name, key = truth_of[e]
+            for g in TRUTHS[name]["genes"]:
+                # report the shallowest field at which the gene first misses
+                for n in TRUTHS[name]["depths"]:
+                    h, d = graded[e][(g, n)]
+                    if d and h < d:
+                        dep = ars.get(e, {}).get(g)
+                        notes = []
+                        if dep is not None and dep < DROPOUT_DEPTH:
+                            notes.append("ARS depth under %gx" % DROPOUT_DEPTH)
+                        if name == "1kGP" and (key_sample(e), g) in star:
+                            notes.append("panel allele flagged exome-only (*)")
+                        w.writerow([e, key_sample(e), name, g, n, h, d,
+                                    "%.1f" % dep if dep is not None else "",
+                                    *calls[e][g], *key[g], "; ".join(notes)])
+                        n_miss += 1
+                        break
 
-def main():
-    selftest()
-
-    key = load_key(KEY_PATH)
-    calls, coverage = load_calls(CALLS_PATH)
-    apply_exclusions(key)
-
-    missing = sorted({key_sample(s) for s in calls} - set(key))
-    if missing:
-        sys.exit("ERROR: samples called but absent from the key: %s" % missing)
-
-    odd = scan_nonstandard(key, calls)
-    if odd:
-        print("\nWARNING: non-IMGT designations still present after exclusions:")
-        for label, sample, gene, allele in odd:
-            print("  [%s] %s HLA-%s %s" % (label, sample, gene, allele))
-
-    graded = sorted(calls)
-
-    print("\nKey:   %s" % KEY_PATH)
-    print("Calls: %s" % CALLS_PATH)
-
-    # ---- call rate: all samples, key never consulted ----
-    called, expected, untyped = call_rate(calls)
-    print("\nCALL RATE  (hla_resolve output only, independent of the key)")
-    print("  %d/%d alleles called across %d samples = %.2f%%"
-          % (called, expected, len(calls), 100.0 * called / expected))
-    if untyped:
-        print("  genes not typed:")
-        for sample, gene, n in untyped:
-            print("    %-8s HLA-%-5s %d/2 alleles called" % (sample, gene, n))
-
-    # ---- concordance: every sample, called alleles only ----
-    print("\nCONCORDANCE  (accuracy among alleles actually called)")
-    print("  Evaluated %d allele calls across %d samples" % (called, len(graded)))
-
-    per_gene = {n: defaultdict(lambda: [0, 0]) for n in DEPTHS}
-    for sample in graded:
-        for gene in GENES:
-            for n in DEPTHS:
-                h, d = grade_gene(key[key_sample(sample)][gene], calls[sample][gene], n)
-                per_gene[n][gene][0] += h
-                per_gene[n][gene][1] += d
-
-    print("\n      " + "".join(g.rjust(9) for g in GENES) + "   " + "TOTAL".rjust(18))
-    for n in DEPTHS:
-        cells = "".join(("%d/%d" % tuple(per_gene[n][g])).rjust(9) for g in GENES)
-        hits = sum(v[0] for v in per_gene[n].values())
-        denom = sum(v[1] for v in per_gene[n].values())
-        total = "%d/%d = %.2f%%" % (hits, denom, 100.0 * hits / denom) if denom else "n/a"
-        print("  %df  %s   %s" % (n, cells, total.rjust(18)))
-
-    # ---- itemised misses ----
-    n_misses = write_misses(key, calls, graded)
-    print("\nMisses: %d discordant gene x sample combos -> %s"
-          % (n_misses, MISSES_PATH))
-
-    write_per_sample(key, calls, coverage, graded)
-    print("Per sample: %s" % PER_SAMPLE_PATH)
-
+    # ---- summary.txt ------------------------------------------------------
+    out = []
+    out.append("hla_resolve WGS validation: %d entries graded from %d audit file(s)" % (len(graded), len(paths)))
+    if skipped:
+        out.append("no reference typing for %d entries (not graded): %s" % (len(skipped), " ".join(skipped)))
+    if not_planned:
+        out.append("typed but not in the manifest (ignored): %s" % " ".join(not_planned))
+    for name in ("Lai", "1kGP"):
+        es = [e for e in entries if truth_of.get(e, ("",))[0] == name]
+        if not es:
+            continue
+        genes, depths = TRUTHS[name]["genes"], TRUTHS[name]["depths"]
+        samples = {key_sample(e) for e in es}
+        out.append("")
+        out.append("== %s truth: %d entries, %d samples ==" % (name, len(es), len(samples)))
+        called = sum(1 for e in es for g in genes for x in calls[e][g] if is_called(x))
+        expected = 2 * len(genes) * len(es)
+        untyped = [(e, g) for e in es for g in genes if not any(is_called(x) for x in calls[e][g])]
+        out.append("call rate: %d/%d = %.2f%% (%d gene x entry untyped)" % (called, expected, 100.0 * called / expected, len(untyped)))
+        for e, g in untyped:
+            dep = ars.get(e, {}).get(g)
+            out.append("  %-45s HLA-%-5s ARS %s" % (e, g, "%.1fx" % dep if dep is not None else "NA"))
+        cell = lambda g, n, es=es: (sum(graded[e][(g, n)][0] for e in es), sum(graded[e][(g, n)][1] for e in es))
+        out.append(table("concordance among called alleles:", genes, depths, cell))
+        if name == "1kGP":
+            gated = lambda g, n, es=es: (
+                sum(graded[e][(g, n)][0] for e in es if (ars.get(e, {}).get(g) or 0) >= GATE_DEPTH),
+                sum(graded[e][(g, n)][1] for e in es if (ars.get(e, {}).get(g) or 0) >= GATE_DEPTH))
+            out.append(table("concordance, genes with ARS depth >= %gx only:" % GATE_DEPTH, genes, depths, gated))
+        deps = sorted(float(depth[e]["mean_gene_depth"]) for e in es if depth.get(e, {}).get("mean_gene_depth"))
+        if deps:
+            out.append("mean HLA gene depth: mean %.1fx, median %.1fx, range %.1f-%.1fx" % (
+                sum(deps) / len(deps), deps[len(deps) // 2], deps[0], deps[-1]))
+    es = [e for e in entries if e in graded]
+    out.append("")
+    out.append("== combined, %d entries, HLA-A/-B/-C/-DQB1/-DRB1 at 1-2 fields ==" % len(es))
+    cell = lambda g, n, es=es: (sum(graded[e][(g, n)][0] for e in es), sum(graded[e][(g, n)][1] for e in es))
+    out.append(table("concordance among called alleles:", COMBINED_GENES, [1, 2], cell))
+    out.append("")
+    out.append("misses: %d gene x entry -> results/misses.tsv" % n_miss)
+    text = "\n".join(out) + "\n"
+    open(os.path.join(RESULTS, "summary.txt"), "w").write(text)
+    print(text)
 
 
 if __name__ == "__main__":
-    sys.exit("retired: run scripts/grade.py results/audit.txt (this module is imported by it)")
+    if len(sys.argv) < 2:
+        sys.exit(__doc__)
+    main(sys.argv[1:])
