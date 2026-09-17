@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Grade hla_resolve calls against the Lai et al. reference key.
+Grading functions for HLA allele calls against a reference key.
 
-Replaces the by-hand grading described in methods.md with a re-runnable
-implementation. Matching semantics follow hla_resolve/test_against_truth.py
-(zero-padded field comparison, unordered allele pairing, no test-allele reuse).
+Imported by scripts/grade.py, which grades every entry against both reference
+sets (Lai et al. and the 1000 Genomes panel) and writes results/. The
+standalone entry point below is retired; run
 
-    python3 scripts/test_against_truth.py
+    python3 scripts/grade.py results/audit.txt
+
+Matching semantics (zero-padded field comparison, unordered allele pairing, no
+test-allele reuse) are defined here and documented below.
 
 Prints call rate and concordance by gene at 1-4 field resolution. Writes every
 discordant gene x sample to results/hla_resolve_misses.txt and a tab-delimited
@@ -455,4 +458,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit("retired: run scripts/grade.py results/audit.txt (this module is imported by it)")

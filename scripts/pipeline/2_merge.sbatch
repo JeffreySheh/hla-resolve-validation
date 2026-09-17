@@ -1,70 +1,77 @@
 #!/bin/bash
 #SBATCH --job-name=hla_merge
-#SBATCH --output=/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam/logs/merge_%A_%a.out
 #SBATCH --partition=windfall
 #SBATCH --account=windfall
 #SBATCH --qos=windfall
-#SBATCH --requeue
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=16G
-#SBATCH --time=48:00:00
-# STEP 2: pick ONE chemistry per sample, combine -> one bam. Reads any SAMPLE_LIST.
-#   SAMPLE_LIST=~/samples_17.tsv sbatch --array=1-17 ~/2_merge.sbatch
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=8G
+#SBATCH --time=24:00:00
+#SBATCH --no-requeue
+# STEP 2: merge exactly the files data/merge_plan.tsv lists for
+# one entry (a sample x library prep, id <sample>__<prep>) into one unaligned
+# BAM with samtools cat. No chemistry rule here;
+# the decision was made by scripts/select_inputs.py and is reviewable in the
+# plan. Input files are looked up in every root in SEARCH_ROOTS (read-only);
+# output goes under MERGEDIR only.
+#
+#   PLAN=.../data/merge_plan.tsv MERGEDIR=/mnt/beegfs/.../merged \
+#   SEARCH_ROOTS="/mnt/beegfs/.../mglasena/pacbio_bam:/mnt/beegfs/.../jsheh/hla/pacbio_bam" \
+#   sbatch --array=1-N --output=.../logs/merge_%A_%a.out 2_merge.sbatch
+#
+# Array index N maps to the Nth entry in the plan (sorted, unique). Output is
+# <entry>.hifi.bam; type it with --sample_name <sample> and an output dir
+# named after the entry. Use
+# absolute /mnt/beegfs paths: /hb/scratch symlinks are not visible on nodes.
 
 set -uo pipefail
-OUTDIR=${OUTDIR:-/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam}
-MERGEDIR=$OUTDIR/merged
-REVIO_MIN=${REVIO_MIN:-3}
-FORCE_SQ2=${FORCE_SQ2:-" HG01952 HG01978 "}
-SAMPLE_LIST=${SAMPLE_LIST:-$HOME/samples_17.tsv}
-[ -f "$SAMPLE_LIST" ] || { echo "no sample list: $SAMPLE_LIST"; exit 1; }
+PLAN=${PLAN:?set PLAN to merge_plan.tsv}
+MERGEDIR=${MERGEDIR:?set MERGEDIR}
+SEARCH_ROOTS=${SEARCH_ROOTS:?set SEARCH_ROOTS, colon-separated}
 mkdir -p "$MERGEDIR"
-
-SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$SAMPLE_LIST" | tr -d '[:space:]')
-[ -n "$SAMPLE" ] || exit 0
 command -v samtools >/dev/null 2>&1 || module load "${SAMTOOLS_MODULE:-samtools}" 2>/dev/null
-command -v samtools >/dev/null 2>&1 || { echo "FATAL: no samtools after module load"; exit 1; }
+command -v samtools >/dev/null 2>&1 || { echo "FATAL: no samtools"; exit 1; }
 
-OUT="$MERGEDIR/$SAMPLE.hifi.bam"; DONE="$MERGEDIR/.$SAMPLE.done"; TMP="$OUT.tmp"; HDR="$MERGEDIR/.$SAMPLE.hdr"
-log() { echo "[$(date +%H:%M:%S)] $SAMPLE: $*"; }
+ENTRY=$(tail -n +2 "$PLAN" | cut -f1 | sort -u | sed -n "${SLURM_ARRAY_TASK_ID}p")
+[ -n "$ENTRY" ] || { echo "array index past end"; exit 0; }
+SAMPLE=${ENTRY%%__*}
+log() { echo "[$(date +%H:%M:%S)] $ENTRY: $*"; }
+
+OUT="$MERGEDIR/$ENTRY.hifi.bam"; DONE="$MERGEDIR/.$ENTRY.done"
+TMP="$OUT.tmp"; HDR="$MERGEDIR/.$ENTRY.hdr"; LIST="$MERGEDIR/.$ENTRY.inputs"
 [ -f "$DONE" ] && [ -s "$OUT" ] && { log "already done"; exit 0; }
 rm -f "$DONE" "$TMP" "$HDR"
 
-REVIO=(); SQ2=()
-for f in "$OUTDIR/$SAMPLE"/*.bam; do
-    [ -s "$f" ] && [ -f "$OUTDIR/$SAMPLE/.$(basename "$f").done" ] || continue
-    case "$(basename "$f")" in m84*) REVIO+=("$f");; m64*|m54*) SQ2+=("$f");; esac
-done
-
-if [[ "$FORCE_SQ2" == *" $SAMPLE "* ]] && [ ${#SQ2[@]} -gt 0 ]; then CHEM="SequelII(forced)"; INPUTS=("${SQ2[@]}")
-elif [ ${#REVIO[@]} -ge "$REVIO_MIN" ]; then CHEM=Revio; INPUTS=("${REVIO[@]}")
-elif [ ${#SQ2[@]} -gt 0 ]; then CHEM=SequelII; INPUTS=("${SQ2[@]}")
-elif [ ${#REVIO[@]} -gt 0 ]; then CHEM="Revio(thin)"; INPUTS=("${REVIO[@]}")
-else log "no usable files"; exit 1; fi
+# resolve every planned file against the search roots; a verified download
+# has a .done marker beside it
+INPUTS=(); : > "$LIST"
+while IFS=$'\t' read -r entry s prep fname rest; do
+    [ "$entry" = "$ENTRY" ] || continue
+    found=""
+    IFS=: read -ra ROOTS <<< "$SEARCH_ROOTS"
+    for root in "${ROOTS[@]}"; do
+        f="$root/$SAMPLE/$fname"
+        if [ -s "$f" ] && [ -f "$root/$SAMPLE/.$fname.done" ]; then found="$f"; break; fi
+    done
+    [ -n "$found" ] || { log "MISSING or unverified: $fname"; exit 1; }
+    INPUTS+=("$found"); echo "$found" >> "$LIST"
+done < "$PLAN"
 NIN=${#INPUTS[@]}
-log "$CHEM: ${#REVIO[@]} Revio / ${#SQ2[@]} SqII -> using $NIN"
+[ "$NIN" -gt 0 ] || { log "no files in plan"; exit 1; }
+log "$NIN input(s) from plan"
 
-KIN=$(samtools view "${INPUTS[0]}" 2>/dev/null | head -500 | grep -oE '(fi|fp|ri|rp|ip|pw):' | head -1)
-
-if [ "$NIN" -eq 1 ] && [ -z "$KIN" ]; then
-    cp "${INPUTS[0]}" "$TMP"
-elif [ -n "$KIN" ]; then
-    log "stripping kinetics during merge"
-    samtools merge -@16 -f - "${INPUTS[@]}" | samtools view -b -@16 -x fi -x fp -x ri -x rp -x ip -x pw -o "$TMP" -
+if [ "$NIN" -eq 1 ]; then
+    ln -sf "${INPUTS[0]}" "$OUT"
+    log "single file: symlinked"
 else
+    # one @HD, every @RG, the rest of the header from the first file
     { samtools view -H "${INPUTS[0]}" | grep '^@HD'
       for f in "${INPUTS[@]}"; do samtools view -H "$f" | grep '^@RG'; done | awk '!s[$0]++'
       samtools view -H "${INPUTS[0]}" | grep -vE '^@(HD|RG)'; } > "$HDR"
-    if [ "$(grep -c '^@RG' "$HDR")" = "$NIN" ]; then
-        samtools cat -h "$HDR" -o "$TMP" "${INPUTS[@]}"
-    else
-        samtools merge -@16 -f "$TMP" "${INPUTS[@]}"
-    fi
+    NRG=$(grep -c '^@RG' "$HDR")
+    [ "$NRG" -ge "$NIN" ] || { log "header has $NRG @RG for $NIN inputs"; rm -f "$HDR"; exit 1; }
+    samtools cat -h "$HDR" -o "$TMP" "${INPUTS[@]}" || { log "samtools cat failed"; rm -f "$TMP"; exit 1; }
+    samtools quickcheck -u "$TMP" || { log "quickcheck FAILED"; rm -f "$TMP"; exit 1; }
+    mv -f "$TMP" "$OUT"; rm -f "$HDR"
 fi
-[ -s "$TMP" ] || { log "merge produced nothing"; exit 1; }
-
-samtools quickcheck -u "$TMP" || { log "quickcheck FAILED"; rm -f "$TMP"; exit 1; }
-[ "$(samtools view -H "$TMP" | grep -c '^@RG')" = "$NIN" ] || { log "read-group count wrong"; rm -f "$TMP"; exit 1; }
-
-mv -f "$TMP" "$OUT"; rm -f "$HDR"; touch "$DONE"
-log "ok: $CHEM, $NIN files -> $(du -h --apparent-size "$OUT" | cut -f1)"
+touch "$DONE"
+log "ok: $NIN files -> $(du -h --apparent-size -L "$OUT" | cut -f1)"
