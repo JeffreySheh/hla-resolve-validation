@@ -1,29 +1,40 @@
 # HLA-Resolve WGS validation
 
-Benchmark of [HLA-Resolve](https://github.com/matthewglasenapp/hla_resolve) on public PacBio whole-genome sequencing: 146 sequencing libraries from 130 samples, typed on one tool version and graded against two reference typings. The published summary is [`docs/wgs_validation.md`](https://github.com/matthewglasenapp/hla_resolve/blob/main/docs/wgs_validation.md) in the HLA-Resolve repository; this repository holds the input manifest, the pipeline that produced it, and the graded results.
+Benchmark of [HLA-Resolve](https://github.com/matthewglasenapp/hla_resolve) v0.9.8 (IPD-IMGT/HLA release 3.64.0) on public whole-genome PacBio reads for 143 sequencing libraries from 129 samples. All libraries were sequenced by the Human Pangenome Reference Consortium (HPRC; cohorts HPRC, HPRC_PLUS) except the two Genome in a Bottle (GIAB) HG002 libraries. Every library was typed independently. Libraries sequenced across multiple SMRT cells were combined to a target genome-wide coverage depth of 30×. Samples with two libraries appear twice as independent measurements. The results are in the HLA-Resolve repository under [`docs/wgs_validation.md`](https://github.com/matthewglasenapp/hla_resolve/blob/main/docs/wgs_validation.md). This repository holds the scripts and data that produced them.
 
-## Design
+## Sample and library selection
 
-- **Unit of the benchmark is a sequencing library** (one sample × one library preparation), named `<sample>__<library>`. A sample sequenced from two libraries is typed twice and reported twice; the two runs are independent measurements.
-- **Two reference sets.** Lai et al. 2024 ([doi:10.1016/j.csbj.2024.03.030](https://doi.org/10.1016/j.csbj.2024.03.030)) for the HPRC release 1 samples: eight classical genes, up to four fields. The 1000 Genomes Project HLA panel ([20181129_HLA_types_full_1000_Genomes_Project_panel.txt](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HLA_types/20181129_HLA_types_full_1000_Genomes_Project_panel.txt)) for the 1000 Genomes samples HPRC sequenced in later years: HLA-A, -B, -C, -DQB1, -DRB1 at two fields. A sample in both sets is graded against Lai.
-- **Input selection is rule-based and recorded.** The rules ran once (`scripts/select_inputs.py`) and their output is the fixed file list in `data/manifest.tsv`; reproduction uses the manifest, not the rules.
-- **One tool version** for every library (v0.9.8, IPD-IMGT/HLA 3.64.0), recorded in each run log.
+Inputs were chosen by `scripts/select_inputs.py` from the HPRC PacBio HiFi data on S3 (`working/HPRC` and `working/HPRC_PLUS`), and the chosen files are listed in `data/manifest.tsv`. The goals were to type one sequencing library at a time, at a depth typical of a single whole-genome run (30x), using only standard WGS data.
 
-### Selection rules
+**Included**
 
-Applied per sample to every BAM under `working/HPRC/<sample>/raw_data/PacBio_HiFi/` and `working/HPRC_PLUS/…` on the HPRC bucket (listed recursively — some cells sit in `primrose/` or `wMods/` subfolders):
+- One entry per sequencing library, identified from the HPRC file index or the BAM read group. A sample with two libraries at 20× or more is typed twice.
+- SMRT cells from the same sequencing library were combined to reach a target depth of 30x but not exceed 40x.
 
-1. Library identity from the HPRC file index (`library_ID`, movie suffix stripped), else the BAM read-group `LB` tag, else "untagged" for old `.ccs.bam` files without tags.
-2. Excluded: downloads that did not verify; files under 1 GB (barcode cross-talk stubs); files whose `LB`/`SM` names another sample; non-WGS preparations (Fiber-seq, AMPure, dilution tests); a second encoding of the same SMRT cell (`.5mc`, `.fixed_kinetics`, `.pm_v1.4.0`).
-3. The deepest library is the sample's primary entry. Every other library at ≥20× on its own is an additional entry. A library under 20× is typed only when it is the sample's only one (flagged).
-4. Depth cap: cells of a library are added in run order to an estimated 30× genome-wide (HPRC index coverage per file, or file size × a per-chemistry rate; pinned by override for six HPRC_PLUS pools the index does not cover). Once above 20×, a cell that would pass 40× is left out.
-5. Cells are concatenated with `samtools cat`; no duplicate removal, no kinetics stripping.
+**Excluded**
 
-Hand corrections to the metadata are in `data/merge_overrides.tsv` (each with a note).
+- Non-WGS libraries: Fiber-seq, AMPure, and dilution tests.
+- Barcode cross-talk: files under 1 GB, or whose read group names another sample.
+- Duplicate encodings of the same cell (`.5mc`, `.fixed_kinetics`, `.pm_v1.4.0` copies).
+- Libraries below 20× when the same sample has a deeper library. A sample whose only library is below 20× was still typed.
 
-### Grading
+Metadata corrections are listed in `data/merge_overrides.tsv`.
 
-Call rate counts every allele emitted against two per gene per library; HLA-Resolve does not type a gene whose antigen recognition site is under 8× mean depth, and such genes count against call rate, not concordance. Concordance is measured among alleles called. An allele is evaluated at a field resolution only if the reference specifies it to that resolution; a call resolved to fewer fields than the reference is discordant. The two alleles of a gene are paired with the reference by the assignment that maximizes agreement; a reference ambiguity (`A*03:01/A*03:04`) accepts either allele. One Lai allele (`HG01358 DRB1*04:92#`, an uncertain call) is excluded.
+## Scoring
+
+Allele calls were compared to two reference sets:
+
+- **Lai et al. 2024** ([doi.org/10.1016/j.csbj.2024.03.030](https://doi.org/10.1016/j.csbj.2024.03.030); Supplementary File 6)
+  - 42 HPRC release 1 samples, 49 libraries
+  - HLA-A, -B, -C, -DPA1, -DPB1, -DQA1, -DQB1, -DRB1
+  - Resolution: up through four-field (full) resolution
+- **1000 Genomes Project HLA panel** ([20181129_HLA_types_full_1000_Genomes_Project_panel.txt](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HLA_types/20181129_HLA_types_full_1000_Genomes_Project_panel.txt))
+  - 87 samples, 94 libraries
+  - HLA-A, -B, -C, -DQB1, -DRB1
+  - Resolution: two-field resolution
+  - Exome-based (IPD-IMGT/HLA 3.28)
+
+Concordance is reported among alleles called. An allele was evaluated at a given field resolution only if the reference specified it to that resolution. A call resolved to fewer fields than the reference is considered discordant at that level of resolution. By default, genes do not type if their antigen recognition site coverage depth sits below 8x, so call rate was measured as the proportion of total possible allele calls emitted by HLA-Resolve. The two alleles of a gene are paired with the reference by the assignment that maximizes agreement; a reference ambiguity (`A*03:01/A*03:04`) accepts either allele.
 
 ## Layout
 
@@ -56,37 +67,47 @@ results/
 archive/                           the original pipeline and its results (see History)
 ```
 
-## Reproducing the run
+## Workflow
 
-Paths below are the ones used on the UCSC cluster; `$P` is a scratch directory, `$R` this repository.
+Steps in order. Steps 1–2 were run once and their outputs are committed; a re-run starts at step 3 from the committed manifest.
+
+| # | Step | Script | Reads | Writes |
+|---|------|--------|-------|--------|
+| 1 | Select inputs by the rules above | `select_inputs.py data/samples_all.txt` | `data/library_by_file.tsv` (BAM header scan), `data/HPRC_PacBio_HiFi.file.index.csv`, `data/merge_overrides.tsv` | `data/merge_plan.tsv` (entry, sample, library, filename, size, depth, note) |
+| 2 | Record the S3 object behind every planned file | `build_manifest.py` | `data/merge_plan.tsv`, HPRC bucket listing (cached in `data/s3_listing.tsv`) | `data/manifest.tsv` |
+| 3 | Download | `pipeline/1_download.sbatch` + `fetch_worker.sh`, one array task per sample | a 4-column cut of `data/manifest.tsv` (sample, filename, URI, bytes) | `<scratch>/pacbio_bam/<sample>/<file>` with a `.done` marker per verified file |
+| 4 | Merge | `pipeline/2_merge.sbatch`, one array task per entry | a frozen copy of `data/merge_plan.tsv`, the downloaded files | `<scratch>/merged/<entry>.hifi.bam` (+ `.done`); a single-file entry is a symlink |
+| 5 | Type | `pipeline/3_type.sbatch`, one array task per entry | the merged BAMs | `<scratch>/results/<entry>/<sample>/hla_typing_results/allele_output.csv`, run log `<entry>/<sample>.hla_resolve.log` |
+| 6 | Audit | `audit_results.py <results root>` | the results tree | `results/audit.txt` (allele calls, coverage summary, per-gene ARS depth, notes) |
+| 7 | Grade | `grade.py results/audit.txt` | `results/audit.txt`, `data/manifest.tsv`, the two answer keys | `results/calls.tsv`, `results/misses.tsv`, `results/summary.txt` |
+| 8 | Document | `build_doc.py` | `results/calls.tsv`, `results/misses.tsv`, `data/manifest.tsv` | `docs/wgs_validation.md` in the HLA-Resolve repository |
+
+Commands as run on the UCSC cluster (`$P` scratch, `$R` this repository):
 
 ```bash
 P=/mnt/beegfs/cluster/scratch/<user>; R=$P/hla-resolve-validation
 X=--exclude=node-29,node-31,node-33,node-34,node-35,node-36,node-37,node-38,node-39,node-40,node-113,node-115   # windfall nodes that are slow or often preempted
 
-# 1. download: the S3 files of the manifest, one array task per sample
+# 3. download (the two GIAB HG002 files are HTTPS: wget -c <url>, then touch .<file>.done beside it)
 awk -F'\t' 'NR>1 && $7 ~ /^s3:/ {print $2"\t"$6"\t"$7"\t"$8}' $R/data/manifest.tsv > $P/pacbio_bam/pacbio_manifest.tsv
 N=$(cut -f1 $P/pacbio_bam/pacbio_manifest.tsv | sort -u | wc -l)
 OUTDIR=$P/pacbio_bam WORKER=$R/scripts/pipeline/fetch_worker.sh sbatch --array=1-$N $X $R/scripts/pipeline/1_download.sbatch
-# the two GIAB HG002 files are HTTPS (wget -c <url>; touch .<file>.done beside it)
 
-# 2. merge, one array task per entry; PLAN is a frozen copy (a task maps its index to the Nth entry of PLAN when it starts)
+# 4. merge; PLAN is a frozen copy because a task maps its array index to the Nth entry of PLAN when it starts
 cp $R/data/merge_plan.tsv $P/plan.tsv; PLAN=$P/plan.tsv
 N=$(tail -n +2 $PLAN | cut -f1 | sort -u | wc -l)
 MERGEDIR=$P/merged SEARCH_ROOTS="$P/pacbio_bam" sbatch --array=1-$N%40 $X $R/scripts/pipeline/2_merge.sbatch
 
-# 3. type (conda env with hla_resolve active; 24 CPU, ~3 h and ~27 GB peak per entry)
+# 5. type (conda env with hla_resolve active; 24 CPU, ~3 h and ~27 GB peak per entry)
 MERGEDIR=$P/merged RESULTS=$P/results sbatch --array=1-$N%10 $X $R/scripts/pipeline/3_type.sbatch
 
-# 4. audit, grade, document
+# 6-8. audit, grade, document
 python3 $R/scripts/audit_results.py $P/results > $R/results/audit.txt
 python3 $R/scripts/grade.py $R/results/audit.txt
-python3 $R/scripts/build_doc.py            # writes ../hla_resolve/docs/wgs_validation.md
+python3 $R/scripts/build_doc.py
 ```
 
-The selection itself is re-run with `python3 scripts/select_inputs.py data/samples_all.txt` (needs a fresh `data/library_by_file.tsv` from the BAM headers) followed by `python3 scripts/build_manifest.py`.
-
-Practical notes from the run: the shared filesystem, not CPU, sets the pace (≈0.5 GB/s total; merging 9 TB took ~8 h at 40 concurrent streams, typing ~3 h per entry at 10–20 concurrent); windfall jobs are preempted and the array scripts use `--no-requeue`, so failed tasks are resubmitted by index; a task that dies at import (NFS hiccup on the conda env) is retried by `3_type.sbatch`.
+Notes from the run: the shared filesystem, not CPU, sets the pace (about 0.5 GB/s in total; merging 9 TB took ~8 h at 40 concurrent streams, typing ~3 h per entry at 10–20 concurrent). Windfall jobs get preempted and the array scripts use `--no-requeue`, so a failed task is resubmitted by index. A typing task that dies at import (NFS hiccup on the conda env) retries itself.
 
 ## History
 
