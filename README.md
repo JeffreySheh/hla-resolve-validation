@@ -50,17 +50,19 @@ data/
   kgp_answer_key.tsv               1000 Genomes panel reference typings
   kgp_star_alleles.tsv             panel alleles the 1000 Genomes file marks as exome-only (`*`)
 scripts/
-  select_inputs.py                 rules -> data/merge_plan.tsv
-  build_manifest.py                merge_plan.tsv + S3 listing -> data/manifest.tsv
-  pipeline/1_download.sbatch, fetch_worker.sh   download from a manifest (verified, resumable)
-  pipeline/2_merge.sbatch          samtools cat per input BAM, from a plan
-  pipeline/3_type.sbatch           hla_resolve per input BAM
-  pipeline/4_audit_results.py      results tree -> results/audit.txt
-  pipeline/5_test_against_truth.py results/audit.txt -> results/ (both references)
+  select_inputs.py                 applies the selection rules and writes data/merge_plan.tsv
+  build_manifest.py                creates data/manifest.tsv from merge_plan.tsv and the S3 listing
+  pipeline/
+    1_download.sbatch              downloads the read files (fetch_worker.sh handles one file)
+    fetch_worker.sh
+    2_merge.sbatch                 concatenates SMRT cells into the final input BAMs for HLA typing
+    3_type.sbatch                  runs HLA-Resolve on each input BAM
+    4_audit_results.py             collects allele calls and coverage into results/audit.txt
+    5_test_against_truth.py        compares allele calls to the reference typings
 results/
-  audit.txt                        raw audit of the typing run
-  calls.tsv                        one row per input BAM: metadata, depth, per-gene ARS depth, call rate, concordance by field, alleles
-  misses.tsv                       every discordant gene x input BAM
+  audit.txt                        allele calls and coverage from every HLA-Resolve run
+  calls.tsv                        HLA typing results per input BAM: calls, coverage, concordance
+  misses.tsv                       discordant HLA allele calls
   summary.txt                      call rate and concordance tables
 archive/                           the original pipeline and its results
 ```
