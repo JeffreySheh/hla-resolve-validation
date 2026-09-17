@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write data/manifest.tsv: every input file behind every typed entry.
+"""Write data/manifest.tsv: every input file behind every typed BAM.
 
 Joins the plan (data/merge_plan.tsv, written once by select_inputs.py) to the
 S3 object each file came from, so the benchmark can be reproduced from a fixed
@@ -9,10 +9,10 @@ and cached in data/s3_listing.tsv; delete that file to refresh it.
 
     python3 scripts/build_manifest.py
 
-Columns: entry, sample, cohort, library, instrument, filename, s3_uri, bytes,
+Columns: input_bam, sample, cohort, library, instrument, filename, s3_uri, bytes,
 cov_x. `cohort` is the S3 collection the file sits under (HPRC or HPRC_PLUS),
 i.e. who sequenced it. `instrument` is read from the movie name: m84 = Revio,
-m64 and m54 = Sequel II / IIe. An entry that mixes both is "Revio + Sequel II".
+m64 and m54 = Sequel II / IIe. An input BAM that mixes both is "Revio + Sequel II".
 """
 
 import csv
@@ -71,7 +71,7 @@ def main():
 
     by_entry = {}
     for r in plan:
-        by_entry.setdefault(r["entry"], []).append(r)
+        by_entry.setdefault(r["input_bam"], []).append(r)
 
     rows, missing = [], []
     for entry in sorted(by_entry):
@@ -91,10 +91,10 @@ def main():
     # kept from the existing manifest
     extra = []
     if os.path.exists(OUT):
-        extra = [r for r in csv.reader(open(OUT), delimiter="\t") if r and r[0] not in by_entry and r[0] != "entry"]
+        extra = [r for r in csv.reader(open(OUT), delimiter="\t") if r and r[0] not in by_entry and r[0] != "input_bam"]
     with open(OUT, "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")
-        w.writerow(["entry", "sample", "cohort", "library", "instrument", "filename", "s3_uri", "bytes", "cov_x"])
+        w.writerow(["input_bam", "sample", "cohort", "library", "instrument", "filename", "s3_uri", "bytes", "cov_x"])
         w.writerows(rows)
         w.writerows(extra)
     print("wrote %s: %d files, %d entries, %d samples" % (OUT, len(rows), len(by_entry), len(samples)))

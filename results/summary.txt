@@ -2,7 +2,7 @@ hla_resolve WGS validation: 143 entries graded from 1 audit file(s)
 typed but not in the manifest (ignored): HG01258__HG01258.HFSS2
 
 == Lai truth: 49 entries, 42 samples ==
-call rate: 784/784 = 100.00% (0 gene x entry untyped)
+call rate: 784/784 = 100.00% (0 gene x input BAM untyped)
 concordance among called alleles:
                 A        B        C     DPA1     DPB1     DQA1     DQB1     DRB1               TOTAL
      1f      98/98    98/98    98/98    98/98    98/98    98/98    98/98    96/97     782/783 = 99.87%
@@ -12,7 +12,7 @@ concordance among called alleles:
 mean HLA gene depth: mean 34.7x, median 35.9x, range 22.4-46.8x
 
 == 1kGP truth: 94 entries, 87 samples ==
-call rate: 940/940 = 100.00% (0 gene x entry untyped)
+call rate: 940/940 = 100.00% (0 gene x input BAM untyped)
 concordance among called alleles:
                 A        B        C     DQB1     DRB1               TOTAL
      1f    188/188  188/188  188/188  160/160  187/188     911/912 = 99.89%
@@ -29,4 +29,4 @@ concordance among called alleles:
      1f    286/286  286/286  286/286  258/258  283/285   1399/1401 = 99.86%
      2f    285/286  284/286  284/286  258/258  279/285   1390/1401 = 99.21%
 
-misses: 57 gene x entry -> results/misses.tsv
+misses: 57 gene x input BAM -> results/misses.tsv

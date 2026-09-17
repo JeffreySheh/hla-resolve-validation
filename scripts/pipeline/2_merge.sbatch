@@ -8,7 +8,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --no-requeue
 # STEP 2: merge exactly the files data/merge_plan.tsv lists for
-# one entry (a sample x library prep, id <sample>__<prep>) into one unaligned
+# one input BAM (a sample x library prep, named <sample>__<prep>) into one unaligned
 # BAM with samtools cat. No chemistry rule here;
 # the decision was made by scripts/select_inputs.py and is reviewable in the
 # plan. Input files are looked up in every root in SEARCH_ROOTS (read-only);
@@ -18,9 +18,9 @@
 #   SEARCH_ROOTS="/mnt/beegfs/.../mglasena/pacbio_bam:/mnt/beegfs/.../jsheh/hla/pacbio_bam" \
 #   sbatch --array=1-N --output=.../logs/merge_%A_%a.out 2_merge.sbatch
 #
-# Array index N maps to the Nth entry in the plan (sorted, unique). Output is
-# <entry>.hifi.bam; type it with --sample_name <sample> and an output dir
-# named after the entry. Use
+# Array index N maps to the Nth input BAM in the plan (sorted, unique). Output is
+# <input_bam>.hifi.bam; type it with --sample_name <sample> and an output dir
+# named after it. Use
 # absolute /mnt/beegfs paths: /hb/scratch symlinks are not visible on nodes.
 
 set -uo pipefail

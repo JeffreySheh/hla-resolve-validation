@@ -50,7 +50,7 @@ Overrides (data/merge_overrides.tsv, tab-separated: sample, action, pattern, not
                                            index nor the byte estimate is right
 
 Outputs
-  data/merge_plan.tsv           entry, sample, prep, filename, size_gb, cov_x, note
+  data/merge_plan.tsv           input_bam, sample, prep, filename, size_gb, cov_x, note
   data/merge_plan_excluded.tsv  sample, filename, reason
   --refresh also lists S3 and writes data/download_manifest.tsv in the layout
   1_download.sbatch reads (sample, filename, s3 uri, bytes) for files that are
@@ -356,7 +356,7 @@ def main():
 
     with open(PLAN, "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
-        w.writerow(["entry", "sample", "prep", "filename", "size_gb", "cov_x", "note"])
+        w.writerow(["input_bam", "sample", "prep", "filename", "size_gb", "cov_x", "note"])
         w.writerows(plan)
     with open(EXCLUDED, "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")

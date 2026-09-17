@@ -1,4 +1,4 @@
-entry	sample	cohort	library	instrument	filename	s3_uri	bytes	cov_x
+input_bam	sample	cohort	library	instrument	filename	s3_uri	bytes	cov_x
 HG00097__PG00097.HFSS	HG00097	HPRC	PG00097.HFSS	Revio	m84046_230716_051716_s3.hifi_reads.bc2086.bam	s3://human-pangenomics/working/HPRC/HG00097/raw_data/PacBio_HiFi/m84046_230716_051716_s3.hifi_reads.bc2086.bam	241246151893	18.1
 HG00097__PG00097.HFSS	HG00097	HPRC	PG00097.HFSS	Revio	m84046_230716_054822_s4.hifi_reads.bc2086.bam	s3://human-pangenomics/working/HPRC/HG00097/raw_data/PacBio_HiFi/m84046_230716_054822_s4.hifi_reads.bc2086.bam	253645833588	19.2
 HG00099__PG00099_1.HFSS	HG00099	HPRC	PG00099_1.HFSS	Revio + Sequel II	m54329U_220825_174247-bc2012.5mc.hifi_reads.bam	s3://human-pangenomics/working/HPRC/HG00099/raw_data/PacBio_HiFi/m54329U_220825_174247-bc2012.5mc.hifi_reads.bam	177253603562	15.4

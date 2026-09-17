@@ -6,16 +6,16 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=80G
 #SBATCH --no-requeue
-# STEP 3: run hla_resolve on one merged entry.
+# STEP 3: run hla_resolve on one input BAM.
 #
 #   PLAN=.../data/merge_plan.tsv MERGEDIR=/mnt/beegfs/.../merged RESULTS=/mnt/beegfs/.../results \
 #   sbatch --array=1-N --output=.../logs/type_%A_%a.out 3_type.sbatch
 #
-# Array index N maps to the Nth entry in the plan (sorted, unique), the same
-# order 2_merge.sbatch uses. Output goes to $RESULTS/<entry>/; hla_resolve
+# Array index N maps to the Nth input BAM in the plan (sorted, unique), the same
+# order 2_merge.sbatch uses. Output goes to $RESULTS/<input_bam>/; hla_resolve
 # nests its own <sample>/ inside that, so results land at
-#   $RESULTS/<entry>/<sample>/hla_typing_results/allele_output.csv
-# and the log at $RESULTS/<entry>/<sample>.hla_resolve.log.
+#   $RESULTS/<input_bam>/<sample>/hla_typing_results/allele_output.csv
+# and the log at $RESULTS/<input_bam>/<sample>.hla_resolve.log.
 #
 # --no-requeue and a fresh output directory: a run restarted over partial
 # output has produced silently wrong calls before (stale samtools sort spills).

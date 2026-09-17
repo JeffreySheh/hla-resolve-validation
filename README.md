@@ -8,7 +8,7 @@ Inputs were chosen by `scripts/select_inputs.py` from the HPRC PacBio HiFi data 
 
 **Included**
 
-- One entry per sequencing library, identified from the HPRC file index or the BAM read group. A sample with two libraries at 20× or more is typed twice.
+- One input BAM per sequencing library, identified from the HPRC file index or the BAM read group. A sample with two libraries at 20× or more is typed twice.
 - SMRT cells from the same sequencing library were combined to reach a target depth of 30x but not exceed 40x.
 
 **Excluded**
@@ -40,7 +40,7 @@ Concordance is reported among alleles called. An allele was evaluated at a given
 
 ```
 data/
-  manifest.tsv                     every input file per entry: sample, cohort, library, instrument, filename, S3/HTTPS URI, bytes, index coverage
+  manifest.tsv                     every input file per input BAM: sample, cohort, library, instrument, filename, S3/HTTPS URI, bytes, index coverage
   merge_plan.tsv                   select_inputs.py output the manifest was built from
   merge_overrides.tsv              metadata corrections used by select_inputs.py
   library_by_file.tsv              BAM header scan (LB/PU/SM) of every downloaded file, input to select_inputs.py
@@ -53,14 +53,14 @@ scripts/
   select_inputs.py                 rules -> data/merge_plan.tsv
   build_manifest.py                merge_plan.tsv + S3 listing -> data/manifest.tsv
   pipeline/1_download.sbatch, fetch_worker.sh   download from a manifest (verified, resumable)
-  pipeline/2_merge.sbatch          samtools cat per entry, from a plan
-  pipeline/3_type.sbatch           hla_resolve per entry
-  audit_results.py                 results tree -> results/audit.txt
-  test_against_truth.py            results/audit.txt -> results/ (both references)
+  pipeline/2_merge.sbatch          samtools cat per input BAM, from a plan
+  pipeline/3_type.sbatch           hla_resolve per input BAM
+  pipeline/4_audit_results.py      results tree -> results/audit.txt
+  pipeline/5_test_against_truth.py results/audit.txt -> results/ (both references)
 results/
   audit.txt                        raw audit of the typing run
-  calls.tsv                        one row per entry: metadata, depth, per-gene ARS depth, call rate, concordance by field, alleles
-  misses.tsv                       every discordant gene x entry
+  calls.tsv                        one row per input BAM: metadata, depth, per-gene ARS depth, call rate, concordance by field, alleles
+  misses.tsv                       every discordant gene x input BAM
   summary.txt                      call rate and concordance tables
 archive/                           the original pipeline and its results
 ```
@@ -72,5 +72,5 @@ Start from `data/manifest.tsv`. It was made by downloading a larger set of files
 1. **Download read files.** `scripts/pipeline/1_download.sbatch` downloads the files in `data/manifest.tsv`.
 2. **Merge SMRT cells.** `scripts/pipeline/2_merge.sbatch` combines read files from the same library sequenced across different SMRT cells when needed to reach ~30× genome-wide coverage depth.
 3. **Perform HLA typing.** `scripts/pipeline/3_type.sbatch` runs HLA-Resolve on each finalized BAM.
-4. **Collect results.** `scripts/audit_results.py` gathers the allele calls and coverage from every run into one file, `results/audit.txt`.
-5. **Evaluate HLA allele concordance.** `scripts/test_against_truth.py` compares the HLA allele calls from HLA-Resolve to the reference typings and writes `results/calls.tsv`, `results/misses.tsv`, and `results/summary.txt`.
+4. **Collect results.** `scripts/pipeline/4_audit_results.py` gathers the allele calls and coverage from every run into one file, `results/audit.txt`.
+5. **Evaluate HLA allele concordance.** `scripts/pipeline/5_test_against_truth.py` compares the HLA allele calls from HLA-Resolve to the reference typings and writes `results/calls.tsv`, `results/misses.tsv`, and `results/summary.txt`.

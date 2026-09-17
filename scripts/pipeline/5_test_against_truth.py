@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """Grade HLA-Resolve calls against the reference typings, both references at once.
 
-    python3 scripts/test_against_truth.py results/audit.txt [more audit files...]
+    python3 scripts/pipeline/5_test_against_truth.py results/audit.txt [more audit files...]
 
-An entry is one sample x one library (<sample>__<library>); its calls come from
-the audit written by audit_results.py. The reference for an entry is chosen by
+An input BAM is one sample x one library, named <sample>__<library>; its calls come from
+the audit written by 4_audit_results.py. The reference for an input BAM is chosen by
 sample: the Lai et al. key (eight genes, up to four fields) when the sample is
 in it, otherwise the 1000 Genomes panel (HLA-A, -B, -C, -DQB1, -DRB1, two
 fields).
 
-Reads   data/manifest.tsv           entry -> sample, cohort, library, instrument
+Reads   data/manifest.tsv           input_bam -> sample, cohort, library, instrument
         data/lai_answer_key.tsv     Lai et al. reference typings
         data/kgp_answer_key.tsv     1000 Genomes panel, converted
         data/kgp_star_alleles.tsv   panel alleles flagged exome-only
-Writes  results/calls.tsv           one row per entry: metadata, depth, call
+Writes  results/calls.tsv           one row per input BAM: metadata, depth, call
                                     rate, concordance at each field, alleles
-        results/misses.tsv          every discordant gene x entry with depth
+        results/misses.tsv          every discordant gene x input BAM with depth
         results/summary.txt         call rate and concordance tables per
                                     reference, a combined table, and a
                                     depth-gated table
@@ -198,7 +198,7 @@ def apply_exclusions(key):
     return dropped
 
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MANIFEST = os.path.join(REPO_ROOT, "data", "manifest.tsv")
 LAI_KEY = os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")
 KGP_KEY = os.path.join(REPO_ROOT, "data", "kgp_answer_key.tsv")
@@ -238,22 +238,22 @@ def load_audits(paths):
     calls, depth, ars = {}, {}, {}
     for p in paths:
         for r in read_block(p, "BLOCK1 ALLELE CALLS"):
-            e = r["sample"]
+            e = r.get("input_bam") or r.get("entry") or r["sample"]
             row = {g: [r["HLA-%s_1" % g], r["HLA-%s_2" % g]] for g in GENES}
             if not any(is_called(a) for g in GENES for a in row[g]):
                 continue  # entry still running: audit found the directory but no calls
             calls[e] = row
         for r in read_block(p, "BLOCK2 COVERAGE SUMMARY"):
-            depth[r["sample"]] = r
+            depth[r.get("input_bam") or r.get("entry") or r["sample"]] = r
         for r in read_block(p, "BLOCK3 PER-GENE ARS DEPTH"):
-            ars[r["sample"]] = {g: float(r[g]) if r.get(g, "") not in ("", "NA") else None for g in GENES}
+            ars[r.get("input_bam") or r.get("entry") or r["sample"]] = {g: float(r[g]) if r.get(g, "") not in ("", "NA") else None for g in GENES}
     return calls, depth, ars
 
 
 def load_manifest():
     meta = {}
     for r in csv.DictReader(open(MANIFEST), delimiter="\t"):
-        m = meta.setdefault(r["entry"], {"sample": r["sample"], "cohort": r["cohort"],
+        m = meta.setdefault(r["input_bam"], {"sample": r["sample"], "cohort": r["cohort"],
                                           "library": r["library"], "instrument": r["instrument"],
                                           "files": []})
         m["files"].append(r["filename"])
@@ -332,10 +332,10 @@ def main(paths):
         graded[e] = grade_entry(key, calls[e], TRUTHS[name]["genes"], TRUTHS[name]["depths"])
 
     # ---- calls.tsv --------------------------------------------------------
-    cols = (["entry", "sample", "cohort", "library", "instrument", "truth", "n_files",
+    cols = (["input_bam", "sample", "cohort", "library", "instrument", "truth", "n_files",
              "mean_gene_depth", "mean_ARS_depth", "min_ARS_depth"]
             + ["ARS_%s" % g for g in GENES]
-            + ["genes_typed", "alleles_called", "1f", "2f", "3f", "4f", "ABCDQB1DRB1_1f", "ABCDQB1DRB1_2f"]
+            + ["genes_typed", "alleles_called", "1f", "2f", "3f", "4f"]
             + ["HLA-%s_%d" % (g, i) for g in GENES for i in (1, 2)])
     with open(os.path.join(RESULTS, "calls.tsv"), "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")
@@ -353,11 +353,6 @@ def main(paths):
                 h = sum(v[0] for (g, k), v in gr.items() if k == n)
                 dd = sum(v[1] for (g, k), v in gr.items() if k == n)
                 per_field.append(fmt(h, dd))
-            # the five genes both references cover, for the combined table
-            for n in (1, 2):
-                h = sum(gr.get((g, n), (0, 0))[0] for g in COMBINED_GENES)
-                dd = sum(gr.get((g, n), (0, 0))[1] for g in COMBINED_GENES)
-                per_field.append(fmt(h, dd))
             w.writerow([e, key_sample(e), m.get("cohort", ""), m.get("library", ""), m.get("instrument", ""),
                         name, len(m.get("files", [])),
                         d.get("mean_gene_depth", ""), d.get("mean_ARS_depth", ""), d.get("min_ARS_depth", ""),
@@ -369,7 +364,7 @@ def main(paths):
     n_miss = 0
     with open(os.path.join(RESULTS, "misses.tsv"), "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")
-        w.writerow(["entry", "sample", "truth", "gene", "field", "hits", "denom", "ARS_depth",
+        w.writerow(["input_bam", "sample", "truth", "gene", "field", "hits", "denom", "ARS_depth",
                     "call_1", "call_2", "truth_1", "truth_2", "note"])
         for e in entries:
             if e not in graded:
@@ -410,7 +405,7 @@ def main(paths):
         called = sum(1 for e in es for g in genes for x in calls[e][g] if is_called(x))
         expected = 2 * len(genes) * len(es)
         untyped = [(e, g) for e in es for g in genes if not any(is_called(x) for x in calls[e][g])]
-        out.append("call rate: %d/%d = %.2f%% (%d gene x entry untyped)" % (called, expected, 100.0 * called / expected, len(untyped)))
+        out.append("call rate: %d/%d = %.2f%% (%d gene x input BAM untyped)" % (called, expected, 100.0 * called / expected, len(untyped)))
         for e, g in untyped:
             dep = ars.get(e, {}).get(g)
             out.append("  %-45s HLA-%-5s ARS %s" % (e, g, "%.1fx" % dep if dep is not None else "NA"))
@@ -431,7 +426,7 @@ def main(paths):
     cell = lambda g, n, es=es: (sum(graded[e][(g, n)][0] for e in es), sum(graded[e][(g, n)][1] for e in es))
     out.append(table("concordance among called alleles:", COMBINED_GENES, [1, 2], cell))
     out.append("")
-    out.append("misses: %d gene x entry -> results/misses.tsv" % n_miss)
+    out.append("misses: %d gene x input BAM -> results/misses.tsv" % n_miss)
     text = "\n".join(out) + "\n"
     open(os.path.join(RESULTS, "summary.txt"), "w").write(text)
     print(text)

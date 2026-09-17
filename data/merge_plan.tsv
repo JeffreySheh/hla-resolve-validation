@@ -1,4 +1,4 @@
-entry	sample	prep	filename	size_gb	cov_x	note
+input_bam	sample	prep	filename	size_gb	cov_x	note
 HG00097__PG00097.HFSS	HG00097	PG00097.HFSS	m84046_230716_051716_s3.hifi_reads.bc2086.bam	241.2	18.1	capped at 2 of 3 cells (~37x); prep from index
 HG00097__PG00097.HFSS	HG00097	PG00097.HFSS	m84046_230716_054822_s4.hifi_reads.bc2086.bam	253.6	19.2	capped at 2 of 3 cells (~37x); prep from index
 HG00099__PG00099_1.HFSS	HG00099	PG00099_1.HFSS	m54329U_220825_174247-bc2012.5mc.hifi_reads.bam	177.3	15.4	prep spans Revio + Sequel II; prep from index

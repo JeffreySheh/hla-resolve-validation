@@ -1,4 +1,4 @@
-entry	sample	truth	gene	field	hits	denom	ARS_depth	call_1	call_2	truth_1	truth_2	note
+input_bam	sample	truth	gene	field	hits	denom	ARS_depth	call_1	call_2	truth_1	truth_2	note
 HG00438__HG00438_lib1	HG00438	Lai	B	4	1	2	33.5	B*54:01:01:02	B*51:01:01:01	B*54:01:01:01	B*51:01:01:01	
 HG00621__HG00621_lib1	HG00621	Lai	DQA1	4	1	2	24.9	DQA1*05:05:01:10	DQA1*03:02:01:04	DQA1*03:02:01:01	DQA1*05:05:01:10	
 HG00673__HG00673_lib1	HG00673	Lai	DPA1	4	1	2	35.0	DPA1*02:02:02:07	DPA1*02:02:02:01	DPA1*02:02:02:01	DPA1*02:02:02:01	
