@@ -44,11 +44,11 @@ data/
   merge_plan.tsv                   assigns each read file to a final input BAM for HLA typing
   merge_overrides.tsv              metadata corrections used by select_inputs.py
   library_by_file.tsv              library and sample tags parsed from every downloaded BAM header
-  samples_all.txt                  the 129 HPRC-sequenced samples
-  HPRC_PacBio_HiFi.file.index.csv  HPRC metadata snapshot used for library and coverage
-  s3_listing.tsv                   cached bucket listing behind manifest.tsv
+  samples_all.txt                  List of the 129 HPRC samples typed
+  HPRC_PacBio_HiFi.file.index.csv  Downloaded HPRC PacBio HiFi file index
   lai_answer_key.tsv               Lai et al. reference typings (from their Supplementary File 6)
-  kgp_answer_key.tsv               1000 Genomes panel, converted (ambiguities expanded, `*` flags stripped into kgp_star_alleles.tsv, corrupted numeric cells decoded)
+  kgp_answer_key.tsv               1000 Genomes panel reference typings
+  kgp_star_alleles.tsv             panel alleles the 1000 Genomes file marks as exome-only (`*`)
 scripts/
   select_inputs.py                 rules -> data/merge_plan.tsv
   build_manifest.py                merge_plan.tsv + S3 listing -> data/manifest.tsv

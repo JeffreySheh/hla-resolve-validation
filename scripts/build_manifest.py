@@ -4,8 +4,7 @@
 Joins the plan (data/merge_plan.tsv, written once by select_inputs.py) to the
 S3 object each file came from, so the benchmark can be reproduced from a fixed
 list rather than by re-running the selection rules against a bucket that keeps
-changing. The S3 listing is fetched once per sample over HTTPS (no credentials)
-and cached in data/s3_listing.tsv; delete that file to refresh it.
+changing. The S3 listing is fetched per sample over HTTPS (no credentials).
 
     python3 scripts/build_manifest.py
 
@@ -23,7 +22,6 @@ import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLAN = os.path.join(REPO_ROOT, "data", "merge_plan.tsv")
-CACHE = os.path.join(REPO_ROOT, "data", "s3_listing.tsv")
 OUT = os.path.join(REPO_ROOT, "data", "manifest.tsv")
 
 S3 = "https://human-pangenomics.s3.amazonaws.com/?list-type=2&prefix=working/%s/%s/raw_data/PacBio_HiFi/"
@@ -37,14 +35,9 @@ def instrument(filename):
 
 
 def listing(samples):
-    """{(sample, filename): (cohort, uri, bytes)} from cache plus fresh fetches."""
+    """{(sample, filename): (cohort, uri, bytes)} from the bucket."""
     seen = {}
-    if os.path.exists(CACHE):
-        for row in csv.reader(open(CACHE), delimiter="\t"):
-            seen[(row[0], row[1])] = (row[2], row[3], row[4])
-    cached_samples = {k[0] for k in seen}
-    new = []
-    for s in sorted(samples - cached_samples):
+    for s in sorted(samples):
         for cohort in COHORTS:
             xml = subprocess.run(["curl", "-s", S3 % (cohort, s)], capture_output=True, text=True).stdout
             for key, size in KEY.findall(xml):
@@ -52,15 +45,8 @@ def listing(samples):
                 if (s, fname) in seen:
                     continue  # first cohort listed wins, as the download did
                 seen[(s, fname)] = (cohort, "s3://human-pangenomics/" + key, size)
-                new.append((s, fname))
         if not any(k[0] == s for k in seen):
             print("WARNING: no S3 objects listed for %s" % s, file=sys.stderr)
-    if new:
-        with open(CACHE, "a", newline="") as fh:
-            w = csv.writer(fh, delimiter="\t")
-            for k in new:
-                w.writerow([k[0], k[1], *seen[k]])
-        print("fetched S3 listing for %d files" % len(new))
     return seen
 
 

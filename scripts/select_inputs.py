@@ -6,15 +6,14 @@ decision made from metadata and written to a plan the merge step consumes.
 
 Inputs
   data/library_by_file.tsv              every downloaded BAM on the cluster:
-                                        sample, filename, bytes, done-marker,
-                                        LB and PU from the BAM's own header
+                                        sample, filename, bytes, and the LB, PU
+                                        and SM tags from the BAM's own header
   data/HPRC_PacBio_HiFi.file.index.csv  HPRC file index: library_ID, coverage
                                         (github.com/human-pangenomics/HPRC_metadata)
   data/merge_overrides.tsv              hand-written corrections, see below
 
 Rules, per sample
-  1. drop files without a .done marker (download not verified)
-  2. drop files under MIN_FILE_GB -- barcode cross-talk stubs
+  1. drop files under MIN_FILE_GB -- barcode cross-talk stubs
   3. drop files whose LB names another sample -- cross-talk that is not tiny
   4. drop non-WGS preps: LB matching fiber|ampure|dilut|test
   5. keep one encoding per movie (.5mc / .fixed_kinetics / .pm_v1.4.0 are the
@@ -136,14 +135,13 @@ def foreign_library(sample, lb, sm):
 
 
 def load_files():
-    """library_by_file.tsv: sample, filename, bytes, done, LB, PU, SM."""
+    """library_by_file.tsv: sample, filename, bytes, LB, PU, SM (header line)."""
     files = defaultdict(list)
     for line in open(FILES):
         f = line.rstrip("\n").split("\t")
-        if len(f) < 7 or not f[2].isdigit():
+        if len(f) < 6 or not f[2].isdigit():
             continue
-        files[f[0]].append(dict(name=f[1], size=int(f[2]), done=f[3] == "done",
-                                lb=f[4], pu=f[5], sm=f[6]))
+        files[f[0]].append(dict(name=f[1], size=int(f[2]), lb=f[3], pu=f[4], sm=f[5]))
     return files
 
 
@@ -166,8 +164,6 @@ def plan_sample(sample, entries, index, overrides):
         dropped.append((sample, e["name"], why))
 
     for e in entries:
-        if not e["done"]:
-            drop(e, "download not verified (.done missing)"); continue
         if e["size"] < MIN_FILE_GB * 1e9:
             drop(e, "under %g GB: cross-talk stub" % MIN_FILE_GB); continue
         if foreign_library(sample, e["lb"], e["sm"]):
