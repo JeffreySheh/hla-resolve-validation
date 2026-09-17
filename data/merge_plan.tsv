@@ -87,12 +87,18 @@ HG01175__HG01175_lib1	HG01175	HG01175_lib1	m64043_200623_060946.ccs.bam	25.6	8.5
 HG01243__HG01243_untagged	HG01243	HG01243:untagged	m64136_200827_191603.ccs.bam	36.5		depth estimated from bytes (23x); prep from untagged
 HG01243__HG01243_untagged	HG01243	HG01243:untagged	m64136_200829_012933.ccs.bam	30.7		depth estimated from bytes (23x); prep from untagged
 HG01243__HG01243_untagged	HG01243	HG01243:untagged	m64136_200830_075556.ccs.bam	32.8		depth estimated from bytes (23x); prep from untagged
-HG01258__HG01258.HFSS2	HG01258	HG01258.HFSS2	m84046_231202_090949_s3.hifi_reads.bc2054.bam	175.9	16.2	below 20x (16.2x); no other prep on disk; prep from index
+HG01258__HG01258.HiFiEx_f1	HG01258	HG01258.HiFiEx_f1	m64076_200306_185917.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	108.0	8.4	prep from index
+HG01258__HG01258.HiFiEx_f1	HG01258	HG01258.HiFiEx_f1	m64076_200308_194406.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	119.5	9.5	prep from index
+HG01258__HG01258.HiFiEx_f1	HG01258	HG01258.HiFiEx_f1	m64076_200310_015720.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	108.0	8.6	prep from index
+HG01258__HG01258.HiFiEx_f1	HG01258	HG01258.HiFiEx_f1	m64076_200311_082315.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	119.7	9.4	prep from index
 HG01358__HG01358_HiFiEx_f1	HG01358	HG01358_HiFiEx_f1	m64076_200201_051547.ccs.bam	26.4	9.7	prep from index
 HG01358__HG01358_HiFiEx_f1	HG01358	HG01358_HiFiEx_f1	m64076_200203_181219.ccs.bam	28.8	10.5	prep from index
 HG01358__HG01358_HiFiEx_f1	HG01358	HG01358_HiFiEx_f1	m64076_200206_215943.ccs.bam	25.4	9.1	prep from index
 HG01358__HG01358_HiFiEx_f1	HG01358	HG01358_HiFiEx_f1	m64076_200208_041234.ccs.bam	23.6	8.4	prep from index
-HG01361__HG01361.HFSS3	HG01361	HG01361.HFSS3	m84046_231202_071034_s1.hifi_reads.bc2052.bam	265.7	24.4	prep from index
+HG01361__HG01361.HiFiEx_f2	HG01361	HG01361.HiFiEx_f2	m54329U_200306_185930.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	135.7	10.7	capped at 3 of 4 cells (~31x); prep from index
+HG01361__HG01361.HiFiEx_f2	HG01361	HG01361.HiFiEx_f2	m54329U_200308_194417.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	135.5	10.7	capped at 3 of 4 cells (~31x); prep from index
+HG01361__HG01361.HiFiEx_f2	HG01361	HG01361.HiFiEx_f2	m54329U_200310_015838.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	116.3	9.2	capped at 3 of 4 cells (~31x); prep from index
+HG01361__HG01361.HFSS3	HG01361	HG01361.HFSS3	m84046_231202_071034_s1.hifi_reads.bc2052.bam	265.7	24.4	additional library; prep from index
 HG01530__HG01530_PB1	HG01530	HG01530_PB1	m64055e_220915_170505.5mc.hifi_reads.bam	173.6	15.2	capped at 2 of 3 cells (~29x); prep from index
 HG01530__HG01530_PB1	HG01530	HG01530_PB1	m64334e_220920_180418.5mc.hifi_reads.bam	162.7	14.1	capped at 2 of 3 cells (~29x); prep from index
 HG01784__HG01784_PB1	HG01784	HG01784_PB1	m64055e_220920_175231.5mc.hifi_reads.bam	145.4	12.4	prep from index

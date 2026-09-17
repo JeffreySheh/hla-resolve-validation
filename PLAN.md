@@ -50,12 +50,13 @@ Merge and type (steps 4-5), after `git pull` on the cluster:
 
 ```bash
 P=/mnt/beegfs/cluster/scratch/mglasena; R=$P/hla-resolve-validation
+cp $R/data/merge_plan.tsv $P/plan_$(date +%Y%m%d).tsv; PLAN=$P/plan_$(date +%Y%m%d).tsv   # frozen copy: a task maps its array index to the Nth entry of PLAN when it starts, so PLAN must not change while the array runs; never point it at the repo file
 X=--exclude=node-29,node-31,node-33,node-34,node-35,node-36,node-37,node-38,node-39,node-40,node-113,node-115   # bad, slow, or often-preempted nodes, see below
-N=$(tail -n +2 $R/data/merge_plan.tsv | cut -f1 | sort -u | wc -l)
-PLAN=$R/data/merge_plan.tsv MERGEDIR=$P/merged SEARCH_ROOTS="$P/pacbio_bam:/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam" \
+N=$(tail -n +2 $PLAN | cut -f1 | sort -u | wc -l)
+MERGEDIR=$P/merged SEARCH_ROOTS="$P/pacbio_bam:/mnt/beegfs/cluster/scratch/jsheh/hla/pacbio_bam" \
   sbatch --array=1-$N $X --output=$P/logs/merge_%A_%a.out $R/scripts/pipeline/2_merge_plan.sbatch
 # when all merges report ok:
-PLAN=$R/data/merge_plan.tsv MERGEDIR=$P/merged RESULTS=$P/results \
+MERGEDIR=$P/merged RESULTS=$P/results \
   sbatch --array=1-$N%15 $X --output=$P/logs/type_%A_%a.out $R/scripts/pipeline/3_type_plan.sbatch
 ```
 

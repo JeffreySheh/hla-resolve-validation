@@ -194,7 +194,10 @@ def plan_sample(sample, entries, index, overrides):
     # prep per file
     for e in kept:
         e["cov"] = None
-        meta = index.get(e["name"])
+        # the index lists one encoding per movie (usually the .ccs.bam or
+        # .hifi_reads.bam); a re-encoded copy of the same movie shares its
+        # library and coverage
+        meta = index.get(e["name"]) or index.get((sample, movie(e["name"])))
         if meta and meta.get("library_ID"):
             e["prep"] = strip_movie(meta["library_ID"])
             e["cov"] = float(meta["coverage"]) if meta.get("coverage") else None
@@ -329,7 +332,10 @@ def refresh(samples, files):
 
 def main():
     files = load_files()
-    index = {r["filename"]: r for r in csv.DictReader(open(INDEX))}
+    index = {}
+    for r in csv.DictReader(open(INDEX)):
+        index[r["filename"]] = r
+        index.setdefault((r["sample_ID"], movie(r["filename"])), r)
     overrides = load_overrides()
     samples = sorted(files)
     lists = [a for a in sys.argv[1:] if not a.startswith("--")]

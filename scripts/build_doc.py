@@ -15,7 +15,11 @@ cannot drift from the tables.
 import argparse
 import csv
 import os
+import sys
 from collections import OrderedDict, defaultdict
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import test_against_truth as T  # noqa: E402
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CALLS = os.path.join(REPO_ROOT, "results", "calls.tsv")
@@ -29,7 +33,7 @@ GENES = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
 KGP_GENES = ["A", "B", "C", "DQB1", "DRB1"]
 FIELDS = ["1f", "2f", "3f", "4f"]
 # One clause on how the panel was read; set to "" to drop it.
-PANEL_NOTE = " The panel is exome-based (IPD-IMGT/HLA 3.28); alternatives it lists with `/` were accepted as equivalent and its exome-only flag (`*`) was retained."
+PANEL_NOTE = "Exome-based (IPD-IMGT/HLA 3.28)"
 # Discordant-allele table: fields to list (empty tuple = no table).
 MISS_FIELDS = (1, 2, 3)
 
@@ -74,6 +78,9 @@ def main():
     args = ap.parse_args()
 
     calls = list(csv.DictReader(open(CALLS), delimiter="\t"))
+    keys = {"Lai": T.load_key(os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")),
+            "1kGP": T.load_key(os.path.join(REPO_ROOT, "data", "kgp_answer_key.tsv"))}
+    excluded = {(s_, g, a) for s_, g, a in T.EXCLUDED_ALLELES}
     misses = list(csv.DictReader(open(MISSES), delimiter="\t"))
     manifest = defaultdict(list)
     for r in csv.DictReader(open(MANIFEST), delimiter="\t"):
@@ -97,15 +104,22 @@ def main():
     w("")
     w("HLA-Resolve v%s (IPD-IMGT/HLA release %s) was run on public whole-genome PacBio reads for **%d sequencing libraries from %d samples**. "
       "All libraries were sequenced by the Human Pangenome Reference Consortium (HPRC; cohorts %s) except the two Genome in a Bottle (GIAB) HG002 libraries. "
-      "Every library was typed independently. Libraries sequenced across multiple SMRT cells were combined to a target of 30× genome-wide coverage depth. "
+      "Every library was typed independently. Libraries sequenced across multiple SMRT cells were combined to a target genome-wide coverage depth of 30×. "
       "Samples with two libraries appear twice as independent measurements."
       % (args.version, args.imgt, len(calls), len(by_sample), ", ".join(c for c in cohorts if c != "GIAB")))
     w("")
     w("Allele calls were compared to two reference sets:")
     w("")
-    w("- **Lai et al. 2024** ([%s](%s); [Supplementary File 6](Lai_Supplementary-6.xlsx)) for %d HPRC release 1 samples (%d libraries)." % (LAI_URL.split("//")[1], LAI_URL, n_lai_s, len(lai)))
-    w("- **1000 Genomes Project HLA panel** ([20181129_HLA_types_full_1000_Genomes_Project_panel.txt](%s)) for %d samples (%d libraries): HLA-A, -B, -C, -DQB1 and -DRB1 up through two-field resolution.%s"
-      % (KGP_URL, n_kgp_s, len(kgp), PANEL_NOTE))
+    w("- **Lai et al. 2024** ([%s](%s); [Supplementary File 6](Lai_Supplementary-6.xlsx))" % (LAI_URL.split("//")[1], LAI_URL))
+    w("  - %d HPRC release 1 samples, %d libraries" % (n_lai_s, len(lai)))
+    w("  - HLA-A, -B, -C, -DPA1, -DPB1, -DQA1, -DQB1, -DRB1")
+    w("  - Resolution: up through four-field (full) resolution")
+    w("- **1000 Genomes Project HLA panel** ([20181129_HLA_types_full_1000_Genomes_Project_panel.txt](%s))" % KGP_URL)
+    w("  - %d samples, %d libraries" % (n_kgp_s, len(kgp)))
+    w("  - HLA-A, -B, -C, -DQB1, -DRB1")
+    w("  - Resolution: two-field resolution")
+    if PANEL_NOTE:
+        w("  - %s" % PANEL_NOTE)
     w("")
     w("The following command was used for each sample:")
     w("")
@@ -121,8 +135,6 @@ def main():
       "A call resolved to fewer fields than the reference is considered discordant at that level of resolution. "
       "By default, genes do not type if their antigen recognition site coverage depth sits below 8x, so call rate was measured as the proportion of total possible allele calls emitted by HLA-Resolve.")
     w("")
-    w("Coverage depth is reported as the mean depth across the eight classical HLA genes from the HLA-Resolve run log. Across all %d libraries: mean %.1f×, median %.1f×, range %.1f–%.1f×." % (len(calls), d_mean, d_med, d_min, d_max))
-    w("")
 
     # ---- summary tables ---------------------------------------------------
     for name, rows, genes, fields in (("Lai et al. reference (%d libraries, %d samples)" % (len(lai), n_lai_s), lai, GENES, FIELDS),
@@ -137,12 +149,36 @@ def main():
         w("| Alleles called | %d |" % called)
         w("| Call rate | %s |" % pct(called, expected))
         w("")
+        # reference alleles that cannot be evaluated: absent from the key, or excluded
+        tname = "Lai" if rows is lai else "1kGP"
+        absent = defaultdict(int)
+        dropped = []
+        for r in rows:
+            k = keys[tname][r["sample"]]
+            for g in genes:
+                for a in k[g]:
+                    if not T.is_called(a):
+                        absent[g] += 1
+                for s_, g_, a_ in excluded:
+                    if s_ == r["sample"] and g_ == g:
+                        dropped.append("%s %s" % (s_, a_))
         w("| Resolution | Concordance | Concordant alleles | Alleles evaluated |")
         w("|---|---:|---:|---:|")
         for f in fields:
             h, d = sum_field(rows, f)
             w("| %s-field | %s | %d | %d |" % (f[0], pct(h, d), h, d))
         w("")
+        notes = []
+        if dropped:
+            notes.append("%d uncertain reference allele%s excluded (%s)" % (len(set(dropped)), "s were" if len(set(dropped)) > 1 else " was", ", ".join(sorted(set(dropped)))))
+        if absent:
+            notes.append("the reference has missing " + " and ".join(
+                "HLA-%s calls for %d samples (%d alleles)" % (g, n // 2, n) for g, n in sorted(absent.items())))
+        if tname == "Lai":
+            notes.append("not all reference alleles have third and fourth field values")
+        if notes:
+            w("Alleles evaluated is lower than alleles called because " + ", and ".join(notes) + ".")
+            w("")
     both = [r for r in calls if r["truth"] in ("Lai", "1kGP")]
     w("## All libraries")
     w("")
@@ -166,7 +202,10 @@ def main():
     # ---- per-library table ------------------------------------------------
     w("## Results by library")
     w("")
-    w("One row per sequencing library, grouped by sample. The 3- and 4-field columns are blank where the reference is two-field.")
+    w("One row per sequencing library, grouped by sample.")
+    w("")
+    w("- The 3- and 4-field columns are blank where the reference is two-field.")
+    w("- HLA coverage is the mean depth across the eight classical HLA genes from the HLA-Resolve run log (all %d libraries: mean %.1f×, median %.1f×, range %.1f–%.1f×)." % (len(calls), d_mean, d_med, d_min, d_max))
     w("")
     w("| Sample | Library | Cohort | Instrument | Reference | HLA&nbsp;coverage | Genes&nbsp;typed | Alleles&nbsp;called | 1-field | 2-field | 3-field | 4-field |")
     w("|---|---|---|---|---|---:|---|---|---|---|---|---|")

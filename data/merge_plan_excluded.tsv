@@ -71,9 +71,11 @@ HG01175	m84081_231222_081401_s1.hifi_reads.bc2025.bam	depth cap: already 36x of 
 HG01175	m84081_231222_101332_s2.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
 HG01175	m84081_231222_121301_s3.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
 HG01175	m84081_231222_141231_s4.hifi_reads.bc2025.bam	depth cap: already 36x of 30 target
+HG01258	m84046_231202_090949_s3.hifi_reads.bc2054.bam	prep HG01258.HFSS2 is 16x, under 20 on its own
 HG01358	m84046_231202_071034_s1.hifi_reads.bc2053.bam	prep HG01358.HFSS2 is 15x, under 20 on its own
 HG01358	m84046_231202_110908_s4.hifi_reads.bc2053.bam	prep HG01358.HFSS2 is 15x, under 20 on its own
 HG01361	m84046_230724_203319_s4.hifi_reads.bc2056.bam	prep HG01361.HFSS2 is 14x, under 20 on its own
+HG01361	m54329U_200311_082605.ccs_reprocessed.jasmine.5mc.hifi_reads.bam	depth cap: already 31x of 30 target
 HG01530	m84091_231208_194716_s4.hifi_reads.bc1021.bam	prep HG01530_PB3 is 11x, under 20 on its own
 HG01530	m84091_231208_201822_s1.hifi_reads.bc1021.bam	prep HG01530_PB3 is 11x, under 20 on its own
 HG01530	m84091_231208_204928_s2.hifi_reads.bc1021.bam	prep HG01530_PB3 is 11x, under 20 on its own
