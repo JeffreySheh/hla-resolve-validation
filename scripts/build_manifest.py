@@ -87,10 +87,16 @@ def main():
                 cohort, uri, size = hit
             rows.append([entry, r["sample"], cohort, r["prep"], inst, r["filename"], uri, size, r["cov_x"]])
 
+    # entries outside the plan (the HG002 GIAB and HPRC_PLUS single cells) are
+    # kept from the existing manifest
+    extra = []
+    if os.path.exists(OUT):
+        extra = [r for r in csv.reader(open(OUT), delimiter="\t") if r and r[0] not in by_entry and r[0] != "entry"]
     with open(OUT, "w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t")
         w.writerow(["entry", "sample", "cohort", "library", "instrument", "filename", "s3_uri", "bytes", "cov_x"])
         w.writerows(rows)
+        w.writerows(extra)
     print("wrote %s: %d files, %d entries, %d samples" % (OUT, len(rows), len(by_entry), len(samples)))
     if missing:
         print("no S3 object found for %d files:" % len(missing))

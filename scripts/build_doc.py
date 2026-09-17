@@ -28,6 +28,10 @@ KGP_URL = "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HLA_types
 GENES = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
 KGP_GENES = ["A", "B", "C", "DQB1", "DRB1"]
 FIELDS = ["1f", "2f", "3f", "4f"]
+# One clause on how the panel was read; set to "" to drop it.
+PANEL_NOTE = " The panel is exome-based (IPD-IMGT/HLA 3.28); alternatives it lists with `/` were accepted as equivalent and its exome-only flag (`*`) was retained."
+# Discordant-allele table: fields to list (empty tuple = no table).
+MISS_FIELDS = (1, 2, 3)
 
 
 def frac(s):
@@ -59,7 +63,7 @@ def stats(xs):
 
 
 def truth_link(t):
-    return {"Lai": "[Lai][lai]", "1kGP": "[1kGP][kgp]"}.get(t, t)
+    return t
 
 
 def main():
@@ -93,36 +97,31 @@ def main():
     w("")
     w("HLA-Resolve v%s (IPD-IMGT/HLA release %s) was run on public whole-genome PacBio reads for **%d sequencing libraries from %d samples**. "
       "All libraries were sequenced by the Human Pangenome Reference Consortium (HPRC; cohorts %s) except the two Genome in a Bottle (GIAB) HG002 libraries. "
-      "Every library was typed on its own: a sample with two libraries appears twice, as two independent measurements."
+      "Every library was typed independently. Libraries sequenced across multiple SMRT cells were combined to a target of 30× genome-wide coverage depth. "
+      "Samples with two libraries appear twice as independent measurements."
       % (args.version, args.imgt, len(calls), len(by_sample), ", ".join(c for c in cohorts if c != "GIAB")))
     w("")
     w("Allele calls were compared to two reference sets:")
     w("")
-    w("- **Lai et al. 2024** ([%s](%s)) for %d HPRC year-1 samples (%d libraries): eight classical genes, up to four fields." % (LAI_URL.split("//")[1], LAI_URL, n_lai_s, len(lai)))
-    w("- **1000 Genomes Project HLA panel** ([20181129_HLA_types_full_1000_Genomes_Project_panel.txt](%s)) for %d samples (%d libraries): HLA-A, -B, -C, -DQB1 and -DRB1 at two fields. "
-      "The panel is exome-based (PolyPheMe, IPD-IMGT/HLA 3.28); alleles it lists with an alternative (`A*03:01/A*03:04`) were accepted as equivalent, and its exome-only flag (`*`) was kept." % (KGP_URL, n_kgp_s, len(kgp)))
+    w("- **Lai et al. 2024** ([%s](%s); [Supplementary File 6](Lai_Supplementary-6.xlsx)) for %d HPRC release 1 samples (%d libraries)." % (LAI_URL.split("//")[1], LAI_URL, n_lai_s, len(lai)))
+    w("- **1000 Genomes Project HLA panel** ([20181129_HLA_types_full_1000_Genomes_Project_panel.txt](%s)) for %d samples (%d libraries): HLA-A, -B, -C, -DQB1 and -DRB1 up through two-field resolution.%s"
+      % (KGP_URL, n_kgp_s, len(kgp), PANEL_NOTE))
     w("")
-    w("## Input selection")
-    w("")
-    w("Input files were chosen by a fixed set of rules (`select_inputs.py` in the validation repository) and are listed under [Input files](#input-files):")
-    w("")
-    w("1. One library per entry, identified from the HPRC file index (`library_ID`) or the BAM read-group `LB` tag. A sample sequenced from two libraries gives two entries.")
-    w("2. Excluded: files under 1 GB (barcode cross-talk), files whose read group names another sample, non-WGS preparations (Fiber-seq, AMPure, dilution tests), and second encodings of the same SMRT cell.")
-    w("3. SMRT cells were added in run order to an estimated 30× genome-wide depth (HPRC index coverage, or file size × a per-chemistry rate). A cell that would take the library past 40× was left out once it was above 20×. A library under 20× on its own was typed only when it was the sample's only library.")
-    w("4. Cells were concatenated with `samtools cat`; no duplicate removal.")
+    w("The following command was used for each sample:")
     w("")
     w("```bash")
     w("hla_resolve --input_file <LIBRARY_uBAM> --sample_name <SAMPLE> \\")
     w("            --platform pacbio --scheme WGS \\")
-    w("            --output_dir <OUTPUT_DIR> --threads 24")
+    w("            --output_dir <OUTPUT_DIR> --threads <THREADS>")
     w("```")
     w("")
-    w("## Grading")
+    w("## Scoring")
     w("")
-    w("Call rate counts every allele HLA-Resolve emitted against two per gene. Concordance is measured among alleles called: a gene the tool did not type (antigen recognition site under 8× mean depth) counts against call rate, not concordance. "
-      "An allele was evaluated at a field resolution only if the reference specified it to that resolution; a call resolved to fewer fields than the reference is discordant. The two alleles of a gene were paired with the reference by the assignment that maximizes agreement.")
+    w("Concordance is reported among alleles called. An allele was evaluated at a given field resolution only if the reference specified it to that resolution. "
+      "A call resolved to fewer fields than the reference is considered discordant at that level of resolution. "
+      "By default, genes do not type if their antigen recognition site coverage depth sits below 8x, so call rate was measured as the proportion of total possible allele calls emitted by HLA-Resolve.")
     w("")
-    w("Coverage is the mean depth across the eight classical HLA genes from the HLA-Resolve run log. Across all %d libraries: mean %.1f×, median %.1f×, range %.1f–%.1f×." % (len(calls), d_mean, d_med, d_min, d_max))
+    w("Coverage depth is reported as the mean depth across the eight classical HLA genes from the HLA-Resolve run log. Across all %d libraries: mean %.1f×, median %.1f×, range %.1f–%.1f×." % (len(calls), d_mean, d_med, d_min, d_max))
     w("")
 
     # ---- summary tables ---------------------------------------------------
@@ -145,21 +144,29 @@ def main():
             w("| %s-field | %s | %d | %d |" % (f[0], pct(h, d), h, d))
         w("")
     both = [r for r in calls if r["truth"] in ("Lai", "1kGP")]
-    w("## All libraries, HLA-A, -B, -C, -DQB1, -DRB1")
+    w("## All libraries")
     w("")
-    w("The five genes both references cover, over all %d libraries, at one and two fields." % len(both))
+    w("Both reference sets pooled, %d libraries. The number of alleles evaluated falls with resolution because the 1000 Genomes panel stops at two fields and covers five genes, and because a reference allele is evaluated only at the fields it specifies." % len(both))
+    w("")
+    called = sum(1 for r in both for g in (GENES if r["truth"] == "Lai" else KGP_GENES) for i in (1, 2) if r["HLA-%s_%d" % (g, i)].strip())
+    expected = sum(2 * len(GENES if r["truth"] == "Lai" else KGP_GENES) for r in both)
+    w("| Metric | Value |")
+    w("|---|---:|")
+    w("| Total possible allele calls | %d |" % expected)
+    w("| Alleles called | %d |" % called)
+    w("| Call rate | %s |" % pct(called, expected))
     w("")
     w("| Resolution | Concordance | Concordant alleles | Alleles evaluated |")
     w("|---|---:|---:|---:|")
-    for f in (1, 2):
-        h, d = sum_field(both, "ABCDQB1DRB1_%df" % f)
-        w("| %d-field | %s | %d | %d |" % (f, pct(h, d), h, d))
+    for f in FIELDS:
+        h, d = sum_field(both, f)
+        w("| %s-field | %s | %d | %d |" % (f[0], pct(h, d), h, d))
     w("")
 
     # ---- per-library table ------------------------------------------------
     w("## Results by library")
     w("")
-    w("One row per sequencing library, grouped by sample. 3- and 4-field columns are blank where the reference is two-field.")
+    w("One row per sequencing library, grouped by sample. The 3- and 4-field columns are blank where the reference is two-field.")
     w("")
     w("| Sample | Library | Cohort | Instrument | Reference | HLA&nbsp;coverage | Genes&nbsp;typed | Alleles&nbsp;called | 1-field | 2-field | 3-field | 4-field |")
     w("|---|---|---|---|---|---:|---|---|---|---|---|---|")
@@ -173,29 +180,50 @@ def main():
     w("")
 
     # ---- misses -------------------------------------------------------------
-    w("## Discordant alleles")
-    w("")
-    w("Every gene × library discordant at any field, with the shallowest discordant field, the gene's mean ARS depth, the calls and the reference alleles.")
-    w("")
-    w("| Sample | Library | Gene | Field | ARS&nbsp;depth | Called | Reference | Note |")
-    w("|---|---|---|---|---:|---|---|---|")
-    lib_of = {r["entry"]: r["library"] for r in calls}
-    for m in sorted(misses, key=lambda m: (int(m["field"]), m["sample"], m["gene"])):
-        w("| %s | %s | %s | %s | %s× | %s / %s | %s / %s | %s |" % (
-            m["sample"], lib_of.get(m["entry"], ""), m["gene"], m["field"], m["ARS_depth"],
-            m["call_1"], m["call_2"], m["truth_1"], m["truth_2"], m["note"]))
-    w("")
+    shown = [m for m in misses if int(m["field"]) in MISS_FIELDS]
+    if MISS_FIELDS and shown:
+        w("## Discordant alleles")
+        w("")
+        w("Gene × library combinations discordant at %s, with the shallowest discordant field, the gene's mean ARS depth, the calls and the reference alleles."
+          % (" or ".join("%d" % f for f in MISS_FIELDS) + " fields" if len(MISS_FIELDS) > 1 else "%d field" % MISS_FIELDS[0]))
+        w("")
+        w("| Sample | Library | Gene | Field | ARS&nbsp;depth | Called | Reference | Note |")
+        w("|---|---|---|---|---:|---|---|---|")
+        lib_of = {r["entry"]: r["library"] for r in calls}
+        for m in sorted(shown, key=lambda m: (int(m["field"]), m["sample"], m["gene"])):
+            w("| %s | %s | %s | %s | %s× | %s / %s | %s / %s | %s |" % (
+                m["sample"], lib_of.get(m["entry"], ""), m["gene"], m["field"], m["ARS_depth"],
+                m["call_1"], m["call_2"], m["truth_1"], m["truth_2"], m["note"]))
+        w("")
 
     # ---- input files --------------------------------------------------------
     w("## Input files")
     w("")
-    w("Each library was typed from one unaligned BAM made by concatenating the files listed. HPRC files are public on the AWS Open Data registry and need no credentials; the S3 URI for each file is in `data/manifest.tsv` of the validation repository. Build a path from the table with:")
+    w("Each library was typed from one unaligned BAM made by concatenating the files listed. HPRC files are public on the AWS Open Data registry and need no credential. Build a path by substituting the Cohort, Sample and Files values from the table into:")
     w("")
     w("```")
     w("s3://human-pangenomics/working/<COHORT>/<SAMPLE>/raw_data/PacBio_HiFi/<FILE>")
     w("```")
     w("")
-    w("Some files sit one folder deeper (`primrose/`, `wMods/`); `aws s3 ls --recursive` or the manifest gives the exact key.")
+    ex_sample = next(iter(by_sample))
+    ex_entry = by_sample[ex_sample][0]["entry"]
+    ex_files = manifest.get(ex_entry, [])
+    ex_cohort = by_sample[ex_sample][0]["cohort"]
+    ex_key = ex_files[0]["s3_uri"] if ex_files and ex_files[0]["s3_uri"].startswith("s3://") else "s3://human-pangenomics/working/%s/%s/raw_data/PacBio_HiFi/%s" % (ex_cohort, ex_sample, ex_files[0]["filename"] if ex_files else "<FILE>")
+    w("For example, the first file listed for %s (cohort %s) is at:" % (ex_sample, ex_cohort))
+    w("")
+    w("```")
+    w(ex_key)
+    w("```")
+    w("")
+    w("Files are public and need no credentials:")
+    w("")
+    w("```bash")
+    w("aws s3 cp --no-sign-request \\")
+    w("  %s ." % ex_key)
+    w("```")
+    w("")
+    w("Some files sit one folder deeper (`primrose/`, `wMods/`). The manifest below gives the exact key.")
     w("")
     w("| Sample | Library | Cohort | Files |")
     w("|---|---|---|---|")
@@ -206,9 +234,6 @@ def main():
             w("| %s | %s | %s | %s |" % (s, r["library"], r["cohort"], names))
     w("")
 
-    w("[lai]: %s" % LAI_URL)
-    w("[kgp]: %s" % KGP_URL)
-    w("")
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     open(args.out, "w").write("\n".join(L) + "\n")
     print("wrote %s: %d libraries, %d samples, %d discordant gene x library" % (args.out, len(calls), len(by_sample), len(misses)))
