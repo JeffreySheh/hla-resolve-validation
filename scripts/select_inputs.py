@@ -23,11 +23,11 @@ Rules, per sample
   7. rank preps by depth: summed HPRC-index coverage when every file of the
      prep is indexed, else bytes scaled per file type (ccs.bam without
      kinetics tags is ~3x denser than hifi_reads/5mc with them). The deepest
-     prep is the sample's primary entry; if it is below MIN_DEPTH the next
-     prep is merged in and the entry flagged. Every other prep that reaches
-     MIN_DEPTH on its own becomes a further entry: a different library of the
+     prep is the sample's primary input BAM; if it is below MIN_DEPTH the next
+     prep is merged in and the input BAM flagged. Every other prep that reaches
+     MIN_DEPTH on its own becomes a further input BAM: a different library of the
      same sample is an independent measurement and is benchmarked separately.
-     Entry ids are <sample>__<prep>, with the prep name made filesystem-safe.
+     Input BAMs are named <sample>__<prep>, with the prep name made filesystem-safe.
      A prep that spans two instruments is flagged.
   8. cap depth: cells of the chosen prep are added in chronological order
      (movie name) until estimated depth reaches TARGET_DEPTH; once above
