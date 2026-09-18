@@ -53,8 +53,7 @@ for attempt in 1 2 3; do
     --platform pacbio \
     --scheme WGS \
     --output_dir "$OUT" \
-    --threads "$THREADS" \
-    --clean_up
+    --threads "$THREADS"
   rc=$?
   [ $rc -eq 0 ] && break
   [ $(( $(date +%s) - t0 )) -lt 120 ] || break
