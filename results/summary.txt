@@ -1,14 +1,14 @@
-hla_resolve WGS validation: 143 entries graded from 1 audit file(s)
+hla_resolve WGS validation: 146 entries graded from 1 audit file(s)
 
-== Lai truth: 49 entries, 42 samples ==
-call rate: 784/784 = 100.00% (0 gene x input BAM untyped)
+== Lai truth: 52 entries, 43 samples ==
+call rate: 832/832 = 100.00% (0 gene x input BAM untyped)
 concordance among called alleles:
                 A        B        C     DPA1     DPB1     DQA1     DQB1     DRB1               TOTAL
-     1f      98/98    98/98    98/98    98/98    98/98    98/98    98/98    96/97     782/783 = 99.87%
-     2f      98/98    98/98    98/98    98/98    98/98    98/98    98/98    95/97     781/783 = 99.74%
-     3f      95/97    93/93    98/98    98/98    97/97    98/98    96/96    93/95     768/772 = 99.48%
-     4f      92/96    75/92    88/97    91/94    92/95    86/98    93/96    84/88     701/756 = 92.72%
-mean HLA gene depth: mean 34.7x, median 35.9x, range 22.4-46.8x
+     1f    104/104  104/104  104/104  104/104  104/104  104/104  104/104  102/103     830/831 = 99.88%
+     2f    104/104  104/104  104/104  104/104  104/104  104/104  104/104  101/103     829/831 = 99.76%
+     3f    101/103    99/99  104/104  104/104  103/103  104/104  102/102   99/101     816/820 = 99.51%
+     4f     98/102    80/98   94/103   97/100   98/101   92/104   99/102    87/91     745/801 = 93.01%
+mean HLA gene depth: mean 34.3x, median 35.6x, range 22.4-46.8x
 
 == 1kGP truth: 94 entries, 87 samples ==
 call rate: 940/940 = 100.00% (0 gene x input BAM untyped)
@@ -22,10 +22,10 @@ concordance, genes with ARS depth >= 10x only:
      2f    187/188  186/188  186/188  160/160  184/188     903/912 = 99.01%
 mean HLA gene depth: mean 32.4x, median 33.5x, range 19.6-44.0x
 
-== both references pooled, 143 input BAMs ==
-  1f  1693/1695 = 99.88%
-  2f  1684/1695 = 99.35%
-  3f  768/772 = 99.48%
-  4f  701/756 = 92.72%
+== both references pooled, 146 input BAMs ==
+  1f  1741/1743 = 99.89%
+  2f  1732/1743 = 99.37%
+  3f  816/820 = 99.51%
+  4f  745/801 = 93.01%
 
-misses: 57 gene x input BAM -> results/misses.tsv
+misses: 58 gene x input BAM -> results/misses.tsv
