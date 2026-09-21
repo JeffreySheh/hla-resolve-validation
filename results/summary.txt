@@ -1,5 +1,4 @@
 hla_resolve WGS validation: 146 entries graded from 1 audit file(s)
-typed but not in the manifest (ignored): HG01258__HG01258.HFSS2
 
 == Lai truth: 52 entries, 43 samples ==
 call rate: 832/832 = 100.00% (0 gene x input BAM untyped)
