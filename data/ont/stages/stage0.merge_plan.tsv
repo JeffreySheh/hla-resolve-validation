@@ -1,0 +1,2 @@
+input_bam	sample	prep	filename	size_gb	cov_x	note
+NA19240__R1041	NA19240	R1041	03_14_23_R1041_NA19240_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	72.9	24.97	1 of 3 runs (~25x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0

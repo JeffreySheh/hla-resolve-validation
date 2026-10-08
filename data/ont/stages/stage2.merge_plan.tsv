@@ -1,0 +1,16 @@
+input_bam	sample	prep	filename	size_gb	cov_x	note
+HG00146__R1041	HG00146	R1041	01_23_24_R1041_HPRC_HG00146_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	43.7	15.05	3 of 6 runs (~37x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG00146__R1041	HG00146	R1041	01_23_24_R1041_HPRC_HG00146_2_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	33.3	11.42	3 of 6 runs (~37x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG00146__R1041	HG00146	R1041	01_23_24_R1041_HPRC_HG00146_3_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	30.7	10.58	3 of 6 runs (~37x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG00290__R1041	HG00290	R1041	01_23_24_R1041_HPRC_HG00290_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	76.9	26.02	1 of 5 runs (~26x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG01167__R1041	HG01167	R1041	08_29_23_R1041_HPRC_HG01167_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	67.8	23.13	1 of 3 runs (~23x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG01786__R1041	HG01786	R1041	11_28_23_R1041_HPRC_HG01786_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	82.4	27.66	1 of 3 runs (~28x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG03583__R1041	HG03583	R1041	10_31_23_R1041_HPRC_HG03583_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	46.0	15.67	2 of 3 runs (~28x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+HG03583__R1041	HG03583	R1041	10_31_23_R1041_HPRC_HG03583_2_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	37.5	12.73	2 of 3 runs (~28x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA18565__R1041	NA18565	R1041	10_10_23_R1041_HPRC_NA18565_5_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	64.2	21.76	1 of 6 runs (~22x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA18944__R1041	NA18944	R1041	11_28_23_R1041_AMED-Collaboration-HPRC_NA18944_1_dorado0.5.3_sup4.3.0_5mCG_5hmCG.bam	88.7	29.66	1 of 4 runs (~30x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA19036__R1041	NA19036	R1041	01_23_24_R1041_HPRC_NA19036_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	55.6	18.93	3 of 6 runs (~39x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA19036__R1041	NA19036	R1041	01_23_24_R1041_HPRC_NA19036_2_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	28.3	9.55	3 of 6 runs (~39x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA19036__R1041	NA19036	R1041	01_23_24_R1041_HPRC_NA19036_3_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	31.3	10.7	3 of 6 runs (~39x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA20346__R1041	NA20346	R1041	11_28_23_R1041_HPRC_NA20346_2_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	87.8	29.86	1 of 4 runs (~30x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+NA20809__R1041	NA20809	R1041	08_08_23_R1041_HPRC_NA20809_1_dorado0.6.0_sup4.3.0_5mCG_5hmCG.bam	70.0	23.75	1 of 3 runs (~24x); dna_r10.4.1_e8.2_400bps_sup@v4.3.0

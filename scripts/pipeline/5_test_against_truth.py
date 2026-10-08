@@ -199,11 +199,13 @@ def apply_exclusions(key):
 
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-MANIFEST = os.path.join(REPO_ROOT, "data", "manifest.tsv")
+# The ONT pass sets VALIDATION_MANIFEST=data/ont/manifest.tsv and
+# VALIDATION_RESULTS=results/ont.
+MANIFEST = os.environ.get("VALIDATION_MANIFEST", os.path.join(REPO_ROOT, "data", "manifest.tsv"))
 LAI_KEY = os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")
 KGP_KEY = os.path.join(REPO_ROOT, "data", "kgp_answer_key.tsv")
 KGP_STAR = os.path.join(REPO_ROOT, "data", "kgp_star_alleles.tsv")
-RESULTS = os.path.join(REPO_ROOT, "results")
+RESULTS = os.environ.get("VALIDATION_RESULTS", os.path.join(REPO_ROOT, "results"))
 
 TRUTHS = {
     "Lai": {"genes": GENES, "depths": [1, 2, 3, 4]},

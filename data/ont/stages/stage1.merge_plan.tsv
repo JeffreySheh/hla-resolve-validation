@@ -1,0 +1,8 @@
+input_bam	sample	prep	filename	size_gb	cov_x	note
+HG02818__R1041	HG02818	R1041	02_22_23_R1041_HG02818_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	53.1	18.16	2 of 3 runs (~37x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0
+HG02818__R1041	HG02818	R1041	02_22_23_R1041_HG02818_2_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	53.7	18.45	2 of 3 runs (~37x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0
+HG03486__R1041	HG03486	R1041	02_15_23_R1041_HG03486_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	45.3	15.55	2 of 3 runs (~32x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0
+HG03486__R1041	HG03486	R1041	02_15_23_R1041_HG03486_2_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	48.3	16.5	2 of 3 runs (~32x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0
+NA18906__R1041	NA18906	R1041	02_15_23_R1041_NA18906_2_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	61.8	21.15	1 of 3 runs (~21x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0
+NA20129__R1041	NA20129	R1041	03_08_23_R1041_NA20129_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	86.5	29.4	1 of 3 runs (~29x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0
+NA21309__R1041	NA21309	R1041	02_22_23_R1041_NA21309_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	86.7	29.4	1 of 3 runs (~29x); dna_r10.4.1_e8.2_400bps_sup@v4.1.0

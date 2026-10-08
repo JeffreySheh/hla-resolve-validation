@@ -27,7 +27,12 @@ find_beside() {
     return 1
 }
 
-SAMPLE_LIST=${SAMPLE_LIST:-$(find_beside samples.tsv)} || { echo "cannot find samples.tsv"; exit 1; }
+# A ready manifest (sample, filename, s3_uri, bytes) can be passed with
+# BUILD_MANIFEST=0, as for the ONT pass (data/ont/download_manifest.tsv).
+BUILD_MANIFEST=${BUILD_MANIFEST:-1}
+if [ "$BUILD_MANIFEST" = 1 ]; then
+    SAMPLE_LIST=${SAMPLE_LIST:-$(find_beside samples.tsv)} || { echo "cannot find samples.tsv"; exit 1; }
+fi
 WORKER=${WORKER:-$(find_beside fetch_worker.sh)} || { echo "cannot find fetch_worker.sh"; exit 1; }
 MANIFEST=${MANIFEST:-$OUTDIR/pacbio_manifest.tsv}
 
@@ -105,7 +110,9 @@ build_manifest() {
     rm -rf "$TMP"
 }
 
-if [ "${SLURM_ARRAY_TASK_ID:-1}" = "${SLURM_ARRAY_TASK_MIN:-1}" ]; then
+if [ "$BUILD_MANIFEST" = 0 ]; then
+    :
+elif [ "${SLURM_ARRAY_TASK_ID:-1}" = "${SLURM_ARRAY_TASK_MIN:-1}" ]; then
     if [ ! -s "$MANIFEST" ] || [ "$SAMPLE_LIST" -nt "$MANIFEST" ]; then
         build_manifest || exit 1
     fi

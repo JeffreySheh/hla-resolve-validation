@@ -1,0 +1,2 @@
+input_bam	sample	cohort	library	instrument	filename	s3_uri	bytes	cov_x
+NA19240__R1041	NA19240	HPRC_PLUS	03_14_23_R1041_NA19240_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG	PromethION	03_14_23_R1041_NA19240_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	s3://human-pangenomics/working/HPRC_PLUS/NA19240/raw_data/nanopore/dorado0.7.2_sup4.1.0_5mCG_5hmCG/03_14_23_R1041_NA19240_1_dorado0.7.2_sup4.1.0_5mCG_5hmCG.bam	72934469800	24.97

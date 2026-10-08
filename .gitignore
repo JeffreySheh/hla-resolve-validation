@@ -14,6 +14,9 @@
 # Pipeline outputs / scratch
 data/*/
 results/*/
+# The ONT whole-genome pass keeps its plan and scores in these
+!data/ont/
+!results/ont/
 *.mosdepth.summary.txt
 *.mosdepth.global.dist.txt
 

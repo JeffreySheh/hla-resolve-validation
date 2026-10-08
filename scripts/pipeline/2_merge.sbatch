@@ -19,7 +19,7 @@
 #   sbatch --array=1-N --output=.../logs/merge_%A_%a.out 2_merge.sbatch
 #
 # Array index N maps to the Nth input BAM in the plan (sorted, unique). Output is
-# <input_bam>.hifi.bam; type it with --sample_name <sample> and an output dir
+# <input_bam>.$SUFFIX.bam (SUFFIX=hifi by default, ont for the ONT pass); type it with --sample_name <sample> and an output dir
 # named after it. Use
 # absolute /mnt/beegfs paths: /hb/scratch symlinks are not visible on nodes.
 
@@ -27,6 +27,7 @@ set -uo pipefail
 PLAN=${PLAN:?set PLAN to merge_plan.tsv}
 MERGEDIR=${MERGEDIR:?set MERGEDIR}
 SEARCH_ROOTS=${SEARCH_ROOTS:?set SEARCH_ROOTS, colon-separated}
+SUFFIX=${SUFFIX:-hifi}
 mkdir -p "$MERGEDIR"
 command -v samtools >/dev/null 2>&1 || module load "${SAMTOOLS_MODULE:-samtools}" 2>/dev/null
 command -v samtools >/dev/null 2>&1 || { echo "FATAL: no samtools"; exit 1; }
@@ -36,7 +37,7 @@ ENTRY=$(tail -n +2 "$PLAN" | cut -f1 | sort -u | sed -n "${SLURM_ARRAY_TASK_ID}p
 SAMPLE=${ENTRY%%__*}
 log() { echo "[$(date +%H:%M:%S)] $ENTRY: $*"; }
 
-OUT="$MERGEDIR/$ENTRY.hifi.bam"; DONE="$MERGEDIR/.$ENTRY.done"
+OUT="$MERGEDIR/$ENTRY.$SUFFIX.bam"; DONE="$MERGEDIR/.$ENTRY.done"
 TMP="$OUT.tmp"; HDR="$MERGEDIR/.$ENTRY.hdr"; LIST="$MERGEDIR/.$ENTRY.inputs"
 [ -f "$DONE" ] && [ -s "$OUT" ] && { log "already done"; exit 0; }
 rm -f "$DONE" "$TMP" "$HDR"
