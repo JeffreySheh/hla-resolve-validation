@@ -51,13 +51,17 @@ EXTRA=()
 if [ "$PLATFORM" = ont ]; then
   export HLA_RESOLVE_ALLOW_ONT_WGS=1
   BC=$(samtools view -H "$BAM" | grep -m1 '^@RG' | grep -o 'basecall_model=[^ 	]*' | cut -d= -f2)
+  # CLAIR3_MODEL overrides the choice below, for basecall models with no
+  # matching Clair3 model in the SIF (v4.3.0).
+  if [ -n "${CLAIR3_MODEL:-}" ]; then MODEL=$CLAIR3_MODEL; else
   case "$BC" in
     dna_r10.4.1_e8.2_400bps_sup@v4.1.0) MODEL=r1041_e82_400bps_sup_v410 ;;
     dna_r10.4.1_e8.2_400bps_sup@v5.0.0) MODEL=r1041_e82_400bps_sup_v500 ;;
     # The Clair3 v2.0.0 SIF has no general sup_v430 model (only a bacteria
     # fine-tuned one), so v4.3.0 reads wait until a model is chosen.
-    *) log "no Clair3 model set for basecall model '$BC'"; exit 1 ;;
+    *) log "no Clair3 model set for basecall model '$BC' (set CLAIR3_MODEL)"; exit 1 ;;
   esac
+  fi
   # Find the SIF without importing hla_resolve, which would run its setup.
   PKG=$(python3 -c "import importlib.util; print(importlib.util.find_spec('hla_resolve').submodule_search_locations[0])")
   SIF=$(ls "$PKG"/data/clair3_sif/clair3_*.sif 2>/dev/null | tail -1)
