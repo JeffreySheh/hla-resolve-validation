@@ -72,6 +72,15 @@ if [ "$PLATFORM" = ont ]; then
   EXTRA=(--clair3_model "$MODEL")
 fi
 
+# MHC_FROM: the results root of an earlier ONT run. The run then starts from
+# that run's MHC BAM and skips alignment (test only).
+if [ -n "${MHC_FROM:-}" ]; then
+  M="$MHC_FROM/$ENTRY/$SAMPLE/mapped_bam/$SAMPLE.hg38.rmdup.chr6.haplotag.bam"
+  [ -s "$M" ] || { log "no MHC BAM at $M"; exit 1; }
+  export HLA_RESOLVE_MHC_BAM=$M
+  log "starting from the MHC BAM $M"
+fi
+
 # The conda env lives on NFS home; when many tasks import it in the same
 # second a task can die at import with FileNotFoundError under site-packages.
 # Such a death comes within seconds, so an attempt that ends inside 2 minutes
