@@ -1,0 +1,2 @@
+input_bam	sample	cohort	library	instrument	filename	s3_uri	bytes	cov_x
+HG03540__R1041	HG03540	HPRC	09_16_24_R1041_UL_HPRC_HG03540_1	PromethION	09_16_24_R1041_UL_HPRC_HG03540_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	s3://human-pangenomics/working/HPRC/HG03540/raw_data/nanopore/sup5.0.0_5mCG_5hmCG/09_16_24_R1041_UL_HPRC_HG03540_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	53890634906	23.26

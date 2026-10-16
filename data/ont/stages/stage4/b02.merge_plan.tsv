@@ -1,0 +1,13 @@
+input_bam	sample	prep	filename	size_gb	cov_x	note
+HG00438__R1041	HG00438	R1041	09_16_24_R1041_UL_HPRC_HG00438_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	94.7	39.95	1 of 2 runs (~40x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG00621__R1041	HG00621	R1041	09_16_24_R1041_UL_HPRC_HG00621_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	96.6	40.98	1 of 2 runs (~41x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG00673__R1041	HG00673	R1041	09_16_24_R1041_UL_HPRC_HG00673_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	95.1	40.39	1 of 2 runs (~40x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG00733__R1041	HG00733	R1041	08_18_2025_R1041_UL_HPRCPLUS_HG00733_1_dorado1.0.0_supv5.2.0_5mCG_5hmCG.bam	54.7	22.48	1 of 3 runs (~22x); dna_r10.4.1_e8.2_400bps_sup@v5.2.0
+HG00735__R1041	HG00735	R1041	09_16_24_R1041_UL_HPRC_HG00735_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	65.6	27.18	1 of 2 runs (~27x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG00741__R1041	HG00741	R1041	09_16_24_R1041_UL_HPRC_HG00741_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	69.0	28.79	1 of 2 runs (~29x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG01071__R1041	HG01071	R1041	09_16_24_R1041_UL_HPRC_HG01071_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	87.6	36.92	1 of 2 runs (~37x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG01106__R1041	HG01106	R1041	09_16_24_R1041_UL_HPRC_HG01106_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	89.5	37.78	1 of 2 runs (~38x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG01109__R1041	HG01109	R1041	08_18_2025_R1041_UL_HPRCPLUS_HG01109_1_dorado1.0.0_supv5.2.0_5mCG_5hmCG.bam	65.7	26.96	2 of 3 runs (~36x); dna_r10.4.1_e8.2_400bps_sup@v5.2.0
+HG01109__R1041	HG01109	R1041	08_25_25_R1041_UL_HPRCPLUS_HG01109_1_dorado1.0.0_supv5.2.0_5mCG_5hmCG.bam	22.5	9.44	2 of 3 runs (~36x); dna_r10.4.1_e8.2_400bps_sup@v5.2.0
+HG01175__R1041	HG01175	R1041	09_16_24_R1041_UL_HPRC_HG01175_1_dorado1.0.0_sup5.0.0_5mCG_5hmCG.bam	60.6	26.28	1 of 2 runs (~26x); dna_r10.4.1_e8.2_400bps_sup@v5.0.0
+HG01243__R1041	HG01243	R1041	07_21_25_R1041_UL_HPRCPLUS_HG01243_1_dorado1.0.0_supv5.2.0_5mCG_5hmCG.bam	141.9	58.85	1 of 1 runs (~59x); dna_r10.4.1_e8.2_400bps_sup@v5.2.0

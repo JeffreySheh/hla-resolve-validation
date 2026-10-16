@@ -200,7 +200,8 @@ def apply_exclusions(key):
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # The ONT pass sets VALIDATION_MANIFEST=data/ont/manifest.tsv and
-# VALIDATION_RESULTS=results/ont.
+# VALIDATION_RESULTS=results/ont. With stage 4, VALIDATION_MANIFEST lists both
+# manifests: data/ont/manifest.tsv:data/ont/stages/stage4.manifest.tsv
 MANIFEST = os.environ.get("VALIDATION_MANIFEST", os.path.join(REPO_ROOT, "data", "manifest.tsv"))
 LAI_KEY = os.path.join(REPO_ROOT, "data", "lai_answer_key.tsv")
 KGP_KEY = os.path.join(REPO_ROOT, "data", "kgp_answer_key.tsv")
@@ -234,10 +235,33 @@ def read_block(path, name):
     return [dict(zip(header, r)) for r in body]
 
 
+def is_calls_table(path):
+    with open(path) as fh:
+        return fh.readline().startswith("input_bam\tsample\t")
+
+
+def depth_value(v):
+    return float(v) if v not in ("", "NA", None) else None
+
+
 def load_audits(paths):
-    """calls[entry][gene] = [a1, a2]; depth[entry] = coverage row; ars[entry][gene] = float."""
+    """calls[entry][gene] = [a1, a2]; depth[entry] = coverage row; ars[entry][gene] = float.
+
+    A path can also be a calls.tsv from an earlier scoring run. It holds the
+    calls and depths the scorer needs, so a run whose results were deleted can
+    be scored again together with new audits."""
     calls, depth, ars = {}, {}, {}
     for p in paths:
+        if is_calls_table(p):
+            for r in csv.DictReader(open(p), delimiter="\t"):
+                e = r["input_bam"]
+                row = {g: [r["HLA-%s_1" % g], r["HLA-%s_2" % g]] for g in GENES}
+                if not any(is_called(a) for g in GENES for a in row[g]):
+                    continue
+                calls[e] = row
+                depth[e] = r
+                ars[e] = {g: depth_value(r.get("ARS_" + g)) for g in GENES}
+            continue
         for r in read_block(p, "BLOCK1 ALLELE CALLS"):
             e = r.get("input_bam") or r.get("entry") or r["sample"]
             row = {g: [r["HLA-%s_1" % g], r["HLA-%s_2" % g]] for g in GENES}
@@ -252,8 +276,10 @@ def load_audits(paths):
 
 
 def load_manifest():
+    """VALIDATION_MANIFEST can list several manifests, separated by ':'."""
     meta = {}
-    for r in csv.DictReader(open(MANIFEST), delimiter="\t"):
+    rows = [r for p in MANIFEST.split(":") for r in csv.DictReader(open(p), delimiter="\t")]
+    for r in rows:
         m = meta.setdefault(r["input_bam"], {"sample": r["sample"], "cohort": r["cohort"],
                                           "library": r["library"], "instrument": r["instrument"],
                                           "files": []})

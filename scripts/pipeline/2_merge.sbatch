@@ -76,3 +76,25 @@ else
 fi
 touch "$DONE"
 log "ok: $NIN files -> $(du -h --apparent-size -L "$OUT" | cut -f1)"
+
+# DELETE_RAW: a download root (the ONT stage 4 raw/ folder). After a verified
+# merge of two or more runs, the runs under that root are deleted, because the
+# merged BAM holds every read. samtools cat copies the BGZF blocks unchanged,
+# so the merged BAM must be at least 99.9% of the summed input size, less 1 MB
+# for the headers. A single
+# run is symlinked, so it stays until 6_cleanup.sbatch removes it. Files in
+# other search roots are never deleted.
+if [ -n "${DELETE_RAW:-}" ] && [ "$NIN" -gt 1 ]; then
+    ROOT=$(readlink -f "$DELETE_RAW")
+    SUM=0; for f in "${INPUTS[@]}"; do SUM=$(( SUM + $(stat -c %s "$f") )); done
+    GOT=$(stat -c %s "$OUT")
+    if [ $(( (GOT + 1048576) * 1000 )) -lt $(( SUM * 999 )) ]; then
+        log "merged BAM is $GOT bytes for $SUM bytes of input; raw files kept"
+        exit 1
+    fi
+    for f in "${INPUTS[@]}"; do
+        case "$(readlink -f "$f")" in
+            "$ROOT"/*) rm -f "$f" "$(dirname "$f")/.$(basename "$f").done"; log "deleted raw $(basename "$f")" ;;
+        esac
+    done
+fi

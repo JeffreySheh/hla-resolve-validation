@@ -101,5 +101,6 @@ for attempt in 1 2 3; do
   log "attempt $attempt died within 2 min (rc=$rc); retrying in 30 s"
   sleep 30; rm -rf "$OUT"; mkdir -p "$OUT"
 done
+# .typed_ok tells 6_cleanup.sbatch that this input BAM may be deleted.
 [ $rc -eq 0 ] && [ -s "$OUT/$SAMPLE/hla_typing_results/allele_output.csv" ] \
-  && log "ok" || { log "FAILED rc=$rc"; exit 1; }
+  && { touch "$OUT/.typed_ok"; log "ok"; } || { log "FAILED rc=$rc"; exit 1; }
