@@ -1,0 +1,32 @@
+hla_resolve WGS validation: 107 entries graded from 2 audit file(s)
+typed but not in the manifest (ignored): HG01243__R1041
+
+== Lai truth: 41 entries, 41 samples ==
+call rate: 656/656 = 100.00% (0 gene x input BAM untyped)
+concordance among called alleles:
+                A        B        C     DPA1     DPB1     DQA1     DQB1     DRB1               TOTAL
+     1f      82/82    82/82    82/82    82/82    82/82    82/82    82/82    77/81     651/655 = 99.39%
+     2f      82/82    82/82    82/82    82/82    82/82    82/82    82/82    76/81     650/655 = 99.24%
+     3f      81/81    78/78    82/82    82/82    81/81    82/82    80/80    75/80     641/646 = 99.23%
+     4f      77/80    66/77    70/81    77/79    76/79    58/82    77/80    50/75     551/633 = 87.05%
+mean HLA gene depth: mean 29.5x, median 28.0x, range 19.5-40.2x
+
+== 1kGP truth: 66 entries, 66 samples ==
+call rate: 660/660 = 100.00% (0 gene x input BAM untyped)
+concordance among called alleles:
+                A        B        C     DQB1     DRB1               TOTAL
+     1f    132/132  132/132  132/132  104/104  132/132     632/632 = 100.00%
+     2f    132/132  131/132  130/132  104/104  131/132     628/632 = 99.37%
+concordance, genes with ARS depth >= 10x only:
+                A        B        C     DQB1     DRB1               TOTAL
+     1f    132/132  132/132  132/132  104/104  132/132     632/632 = 100.00%
+     2f    132/132  131/132  130/132  104/104  131/132     628/632 = 99.37%
+mean HLA gene depth: mean 29.6x, median 28.6x, range 19.0-42.4x
+
+== both references pooled, 107 input BAMs ==
+  1f  1283/1287 = 99.69%
+  2f  1278/1287 = 99.30%
+  3f  641/646 = 99.23%
+  4f  551/633 = 87.05%
+
+misses: 79 gene x input BAM -> results/misses.tsv
